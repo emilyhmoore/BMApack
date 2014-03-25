@@ -13,7 +13,7 @@
 #'  \item{bmk}{Vector of posterior probability odds}
 #'  \item{exp.vals}{A vector of expected coefficient values}
 #'  \item{coefprobs}{A vector of probabilities that the coefficient is non-zero}
-#' @author Emily Moore
+#' @author Jacob Montgomery, Dino Hadzic, Jae Hee Jung, and Emily Moore
 #' @examples
 #' 
 #' x1<-rnorm(500)
@@ -24,21 +24,26 @@
 #' @rdname fitBMA
 #' @export
 
+x<-cbind(x, x+rnorm(1000))
+
+
 setGeneric(name="fitBMA",
            def=function(x, y, g=3, parallel=FALSE, ...)
            {standardGeneric("fitBMA")}
 )
 
+
+
 setMethod(f="fitBMA",
           definition=function(x, y, g=3, parallel=FALSE){
   library(HapEstXXR) ##Needed for powerset function
   library(plyr) ##Will need for later for parallel stuff
-  
+
   ##Error thrown if non-unque column names.
   if(length(unique(colnames(x)))<ncol(x)){stop("Must have unique names for each column")}
   
-  set<-powerset(1:ncol(x)) ##create a list of all possible combos of variables
-            
+  set <- llply(1:ncol(x),function(X){combn(ncol(x),X,simplify=F)}, .parallel=parallel)
+
   list1<-list(NULL) ##empty list
             
   ##This for() loop creates a list item. Each item is a regression based on 
@@ -47,7 +52,7 @@ setMethod(f="fitBMA",
   list1[i]<-list(lm(scale(y)~-1+scale(x[,set[[i]]]))) ##all combinations
   }
   
-  coefs<-llply(list1, coef, .parallel=parallel) ##extract coefs from the regressions in list
+  coefs<-llply(list1, .fun=coef, .parallel=parallel) ##extract coefs from the regressions in list
             
   ##Sets names of coefs to the appropriate column name
   for (i in 1:length(coefs)){
