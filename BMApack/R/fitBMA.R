@@ -23,9 +23,10 @@
 #' fitBMA(x=covars, y=dep)
 #' @rdname fitBMA
 #' @export
-
-x<-cbind(x, x+rnorm(1000))
-
+bigx<-matrix(rnorm(10000), ncol=20)
+x<-bigx[,1:3]
+y<-3*x[,1]+2*x[,2]+rnorm(500)
+colnames(x)<-paste("Var", 1:ncol(x))
 
 setGeneric(name="fitBMA",
            def=function(x, y, g=3, parallel=FALSE, ...)
@@ -33,32 +34,34 @@ setGeneric(name="fitBMA",
 )
 
 
-
 setMethod(f="fitBMA",
           definition=function(x, y, g=3, parallel=FALSE){
-  library(HapEstXXR) ##Needed for powerset function
   library(plyr) ##Will need for later for parallel stuff
 
   ##Error thrown if non-unque column names.
   if(length(unique(colnames(x)))<ncol(x)){stop("Must have unique names for each column")}
   
   set <- llply(1:ncol(x),function(X){combn(ncol(x),X,simplify=F)}, .parallel=parallel)
+  
+  set<-unlist(set, recursive=F)
 
-  list1<-list(NULL) ##empty list
-            
   ##This for() loop creates a list item. Each item is a regression based on 
   ##the covariate matrix. The powerset deal allows an index of possible values
-  for (i in 1:length(set)){
-  list1[i]<-list(lm(scale(y)~-1+scale(x[,set[[i]]]))) ##all combinations
+  run.regs<-function(i, .parallel=parallel){
+    list1<-list(NULL) ##empty list
+    list1<-list(lm(scale(y)~-1+scale(x[,set[[i]]]))) ##all combinations
+    list1<-llply(list1, .fun=coef, .parallel=.parallel)
+    list1<-unlist(list1, recursive=F)
+    return(list1)
   }
-  
-  coefs<-llply(list1, .fun=coef, .parallel=parallel) ##extract coefs from the regressions in list
-            
+
+  coefs<-llply(1:length(set), run.regs, .parallel=parallel)
+
   ##Sets names of coefs to the appropriate column name
   for (i in 1:length(coefs)){
     names(coefs[[i]])<-colnames(x)[set[[i]]]
-  }
-         
+  }     
+
   ##This function extracts the r.squared values
   r.sq<-function(x){
     summary(x)$r.squared
