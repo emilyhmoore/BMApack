@@ -24,9 +24,10 @@
 #' @rdname fitBMA
 #' @export
 bigx<-matrix(rnorm(10000), ncol=20)
+colnames(bigx)<-paste("Var", 1:ncol(bigx))
 x<-bigx[,1:3]
 y<-3*x[,1]+2*x[,2]+rnorm(500)
-colnames(x)<-paste("Var", 1:ncol(x))
+
 
 setGeneric(name="fitBMA",
            def=function(x, y, g=3, parallel=FALSE, ...)
@@ -50,28 +51,26 @@ setMethod(f="fitBMA",
   run.regs<-function(i, .parallel=parallel){
     list1<-list(NULL) ##empty list
     list1<-list(lm(scale(y)~-1+scale(x[,set[[i]]]))) ##all combinations
-    list1<-llply(list1, .fun=coef, .parallel=.parallel)
-    list1<-unlist(list1, recursive=F)
     return(list1)
   }
 
-  coefs<-llply(1:length(set), run.regs, .parallel=parallel)
+  #Get the list of regressions
+  list1<-llply(1:length(set), run.regs, .parallel=parallel)
+  ##Get rid of the outermost list, so it's one list per regression
+  list1<-unlist(list1, recursive=F)
+  
+  ##This gets the r.squared values and puts them in a list
+  fits<-llply(list1, function(x){summary(x)[['r.squared']]}, .parallel=parallel)
+  ##Since lapply makes a list, we unlist to make a vector
+  fits<-unlist(fits)
 
+  ##get the coefs
+  coefs<-llply(list1, .fun=coef, .parallel=.parallel)
+  
   ##Sets names of coefs to the appropriate column name
   for (i in 1:length(coefs)){
     names(coefs[[i]])<-colnames(x)[set[[i]]]
   }     
-
-  ##This function extracts the r.squared values
-  r.sq<-function(x){
-    summary(x)$r.squared
-  }
-            
-  ##This gets the r.squared values and puts them in a list
-  fits<-llply(list1, r.sq, .parallel=parallel)
-            
-  ##Since lapply makes a list, we unlist to make a vector
-  fits<-unlist(fits)
 
   ##Create a matrix of the values needed to calculate b|mk:m0| for each model
   gs<-rep(g, length(set)) ##make a vector of the g value
@@ -147,9 +146,8 @@ setMethod(f="fitBMA",
           }#close function definition
 ) ##Close method
 
+system.time(fitBMA(bigx[1:100,1:10], y[1:100]))
 
-##takes about 10-12 seconds to run regressions with 10 variables 
-##and 1000 observations on my computer without parallel.
-##I can't make parallel work with my computer, so hopefully it works.
+
 
 
