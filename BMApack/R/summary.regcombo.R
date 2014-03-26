@@ -22,8 +22,12 @@
 setMethod(f="summary", signature="regcombo",
           definition=function(object){
 
-##The summary function returns a matrix (table) with the posterior expected value of each coefficient and the posterior probability that each coefficient is non-zero listed by columns.
-return(matrix(c(object@exp.vals,object@coefprobs),ncol=2,dimnames=list(names(object@exp.vals),c("Conditional mean","p(beta!=0|Y)"))))
-       
+##The summary function returns a matrix (table) with the posterior expected value 
+##of each coefficient and the posterior probability that each coefficient is 
+##non-zero listed by columns.
+            
+return(matrix(c(object@exp.vals,object@coefprobs),ncol=2,
+              dimnames=list(names(object@exp.vals),
+                            c("Conditional mean","p(beta!=0|Y)"))))
           })
 
