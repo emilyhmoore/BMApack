@@ -64,13 +64,17 @@ setMethod(f="fitBMA",
   ##Since lapply makes a list, we unlist to make a vector
   fits<-unlist(fits)
 
-  ##get the coefs
-  coefs<-llply(list1, .fun=coef, .parallel=parallel)
+  ##coef.fun will later be used to extract the coefficients from the analysis. 
+  ##This function also uses the setNames function in order to identify the 
+  #variable for each coefficient.
+  coef.fun <- function(i, .parallel=parallel){
+    coefs <- list()
+    coefs <- setNames(coef(list1[[i]]), colnames(x)[set[[i]]])
+    return(coefs)  
+  }
   
-  ##Sets names of coefs to the appropriate column name
-  for (i in 1:length(coefs)){
-    names(coefs[[i]])<-colnames(x)[set[[i]]]
-  }     
+  #Extracts the coefficients.
+  coefs<-llply(1:length(set), coef.fun, .parallel=parallel)   
 
   ##Create a matrix of the values needed to calculate b|mk:m0| for each model
   gs<-rep(g, length(set)) ##make a vector of the g value
