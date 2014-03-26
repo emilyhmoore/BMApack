@@ -36,13 +36,15 @@ setGeneric(name="fitBMA",
 
 
 setMethod(f="fitBMA",
-          definition=function(x, y, g=3, parallel=TRUE,core=10){
+          definition=function(x, y, g=3, parallel=TRUE,
+                              core=10){
   library(plyr)
+  if(parallel==TRUE){
   library(foreach)
   library(multicore)
   library(doMC)
   registerDoMC(cores=core) ##Will need for later for parallel stuff
-
+  }
   ##Error thrown if non-unque column names.
   if(length(unique(colnames(x)))<ncol(x)){stop("Must have unique names for each column")}
   
@@ -170,8 +172,8 @@ setMethod(f="fitBMA",
           }#close function definition
 ) ##Close method
 
-system.time(fitBMA(bigx[1:100,1:10], y[1:100]))
-
-
+thing<-fitBMA(bigx[1:100,1:5], y[1:100], parallel=FALSE)
+print(thing)
+thing@coefprobs
 
 

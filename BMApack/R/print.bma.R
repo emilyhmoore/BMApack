@@ -19,12 +19,11 @@
 #' @export
 #' 
 
-
 setMethod(f="print", signature="bma",
           definition=function(x, ...){
             cat("Posterior Expected Value of Coefficients:", "\n")
-            summary(object@exp.vals)
+            print.default(x@exp.vals)
             cat("\n")
-            cat("Posterior Probability Coefficient is Non-zero:", "\n")
-            summary(object@coefprobs)
+            cat("Summary Stats for Posterior Probability Coefficient is Non-zero:", "\n")
+            print.default(x@coefprobs)
           })
