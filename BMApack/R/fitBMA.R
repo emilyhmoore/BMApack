@@ -39,34 +39,40 @@ setMethod(f="fitBMA",
           definition=function(x, y, g=3, parallel=TRUE,
                               core=10){
   library(plyr)
+  
+  #run only if parallel is TRUE
   if(parallel==TRUE){
   library(foreach)
   library(multicore)
   library(doMC)
   registerDoMC(cores=core) ##Will need for later for parallel stuff
   }
+  
   ##Error thrown if non-unque column names.
   if(length(unique(colnames(x)))<ncol(x)){stop("Must have unique names for each column")}
   
-  set <- llply(1:ncol(x),function(X){combn(ncol(x),X,simplify=F)}, .parallel=parallel)
+  ##making the set
+  set <- llply(1:ncol(x),function(X){combn(ncol(x),X,simplify=F)}, 
+               .parallel=parallel)
   
+  ##making each combination a single list item
   set<-unlist(set, recursive=F)
 
-  ##This for() loop creates a list item. Each item is a regression based on 
-  ##the covariate matrix. The powerset deal allows an index of possible values
+  ##This function runs the regressions for each combination
   run.regs<-function(i, .parallel=parallel){
     list1<-list(NULL) ##empty list
     list1<-list(lm(scale(y)~-1+scale(x[,set[[i]]]))) ##all combinations
     return(list1)
   }
 
-  #Get the list of regressions
+  #Get the list of regression results
   list1<-llply(1:length(set), run.regs, .parallel=parallel)
   ##Get rid of the outermost list, so it's one list per regression
   list1<-unlist(list1, recursive=F)
   
   ##This gets the r.squared values and puts them in a list
   fits<-llply(list1, function(x){summary(x)[['r.squared']]}, .parallel=parallel)
+  
   ##Since lapply makes a list, we unlist to make a vector
   fits<-unlist(fits)
 
