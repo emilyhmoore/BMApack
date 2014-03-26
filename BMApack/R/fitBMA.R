@@ -173,8 +173,14 @@ setMethod(f="fitBMA",
   coefprob<-aaply(themods, 1, sum, .parallel=parallel)
   names(coefprob)<-colnames(x)
   
+    ##'index' shows the model numbers for which each covariate has coefficient estimates larger than zero.
+  index <- alply(thecoefs,1,function(x){which(x>0)})
+  
+  ##For each covariate, calculate the sum of model probabilities for models in which the coefficient estimate is larger than zero. Divide that by the sum of model probabilities for all models in which the covariate is included.
+  coefprob.largerthanzero <- laply(1:nrow(thecoefs),function(i){sum(themods[i,][index[[i]]])})/as.numeric(aaply(themods,1,sum))
+  
   return(new("bma", x=x, y=y, thecoefs=thecoefs, combo.coef=coefs, 
-             combo.fit=fits,bmk=odds.bmk, exp.vals=exp.val, coefprobs=coefprob))
+             combo.fit=fits,bmk=odds.bmk, exp.vals=exp.val, coefprobs=coefprob, coefprobs.largerthanzero=coefprob.largerthanzero))
           }#close function definition
 ) ##Close method
 

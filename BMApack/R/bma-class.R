@@ -11,6 +11,7 @@
 #' \item \code{exp.vals}
 #' \item \code{the coefs}
 #' \item \code{coefprobs}
+#' \item \code{coefprobs.largerthanzero}
 #' \item \code{x} A matrix input of covariates
 #' \item \code{y} The dependent variable input (vector) 
 #' }
@@ -25,6 +26,7 @@ setClass(Class="bma",
            exp.vals="numeric",
            thecoefs="matrix",
            coefprobs="numeric",
+           coefprobs.largerthanzero="numeric",
            x="matrix",
            y="numeric"
          ),
@@ -35,6 +37,7 @@ setClass(Class="bma",
            exp.vals=numeric(),
            thecoefs=matrix(),
            coefprobs=numeric(),
+           coefprobs.largerthanzero=numeric(),
            x = matrix(),
            y = numeric()
          )

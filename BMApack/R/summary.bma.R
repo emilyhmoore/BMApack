@@ -26,8 +26,8 @@ setMethod(f="summary", signature="bma",
 ##of each coefficient and the posterior probability that each coefficient is 
 ##non-zero listed by columns.
             
-return(matrix(c(object@exp.vals,object@coefprobs),ncol=2,
+return(matrix(c(object@exp.vals,object@coefprobs,object@coefprobs.largerthanzero),ncol=3,
               dimnames=list(names(object@exp.vals),
-                            c("Conditional mean","p(beta!=0|Y)"))))
+                            c("Conditional mean","p(beta!=0|Y)","p(beta>0|Y,M)"))))
           })
 

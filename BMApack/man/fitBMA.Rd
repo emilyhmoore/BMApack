@@ -32,7 +32,7 @@ x1<-rnorm(500)
 x2<-rnorm(500,3,15)
 dep<-(x1+2*x2)+rnorm(500,4,100)
 covars<-cbind(x1,x2)
-fitBMA(x=covars, y=dep)
+fitBMA(x=covars, y=dep, parallel=FALSE)
 }
 \author{
 Jacob Montgomery, Dino Hadzic, Jae Hee Jung, and Emily
