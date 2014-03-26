@@ -1,6 +1,6 @@
-#' plot.regcombo Function
+#' plot.bma Function
 #'
-#' Plots regcombo objects as returned by fitBMA.
+#' Plots bma objects as returned by fitBMA.
 #' Plots the density of the coefficient values.
 #' The blue line represents the expected value of the coefficient
 #' The red line represents an expected value of 0. 
@@ -20,11 +20,11 @@
 #' datay<-5*data[,2]+3*data[,3]+rnorm(100)
 #' trial<-(fitBMA(x=data, y=datay, g=3, parallel=FALSE)) 
 #' plot(trial)
-#' @rdname plot.regcombo
+#' @rdname plot.bma
 #' @export
 #' 
 
-setMethod(f="plot", signature="regcombo",
+setMethod(f="plot", signature="bma",
           definition=function(x,y=NULL,...){
             y=NULL
             thecoefs2<-t(x@thecoefs)

@@ -7,7 +7,7 @@
 #' @param g: A value for g. 
 #' @param parallel: runs in parallel if TRUE
 #'
-#' @return An S4 class object with following slots: 
+#' @return An bma class object with following slots: 
 #'  \item{combo.coef}{A list of coefficients from each regression}
 #'  \item{combo.fit}{Vector of R-squared Values} 
 #'  \item{bmk}{Vector of posterior probability odds}
@@ -23,11 +23,11 @@
 #' fitBMA(x=covars, y=dep)
 #' @rdname fitBMA
 #' @export
-bigx<-matrix(rnorm(10000), ncol=20)
-colnames(bigx)<-paste("Var", 1:ncol(bigx))
-x<-bigx[,1:3]
-y<-3*x[,1]+2*x[,2]+rnorm(500)
 
+#bigx<-matrix(rnorm(10000), ncol=20)
+#colnames(bigx)<-paste("Var", 1:ncol(bigx))
+#x<-bigx[,1:3]
+#y<-3*x[,1]+2*x[,2]+rnorm(500)
 
 setGeneric(name="fitBMA",
            def=function(x, y, g=3, parallel=TRUE,core=10,...)
@@ -165,7 +165,7 @@ setMethod(f="fitBMA",
   coefprob<-aaply(themods, 1, sum, .parallel=parallel)
   names(coefprob)<-colnames(x)
   
-  return(new("regcombo", x=x, y=y, thecoefs=thecoefs, combo.coef=coefs, 
+  return(new("bma", x=x, y=y, thecoefs=thecoefs, combo.coef=coefs, 
              combo.fit=fits,bmk=odds.bmk, exp.vals=exp.val, coefprobs=coefprob))
           }#close function definition
 ) ##Close method

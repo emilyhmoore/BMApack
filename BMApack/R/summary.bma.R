@@ -1,6 +1,6 @@
-#' summary.regcombo Function
+#' summary.bma Function
 #'
-#' Summarizes regcombo objects as returned by fitBMA
+#' Summarizes bma objects as returned by fitBMA
 #'
 #'
 #' @return Prints summaries of coefficients and posterior model odds and returns list 
@@ -15,11 +15,11 @@
 #' covars<-cbind(x1,x2) 
 #' trial<-fitBMA(x=covars, y=dep)
 #' summary(trial)
-#' @rdname summary.regcombo
+#' @rdname summary.bma
 #' @export
 #' 
 
-setMethod(f="summary", signature="regcombo",
+setMethod(f="summary", signature="bma",
           definition=function(object){
 
 ##The summary function returns a matrix (table) with the posterior expected value 

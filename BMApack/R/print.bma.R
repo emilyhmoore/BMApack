@@ -1,6 +1,6 @@
-#' Print.regcombo Function
+#' Print.bma Function
 #'
-#' Prints regcombo objects as returned by fitBMA
+#' Prints bma objects as returned by fitBMA
 #'
 #'
 #' @return Prints summaries of coefficients and posterior model odds and returns list 
@@ -15,21 +15,16 @@
 #' covars<-cbind(x1,x2) 
 #' trial<-fitBMA(x=covars, y=dep)
 #' print(trial)
-#' @rdname print.regcombo
+#' @rdname print.bma
 #' @export
 #' 
 
-setMethod(f="print", signature="regcombo",
+
+setMethod(f="print", signature="bma",
           definition=function(x, ...){
-            cat("Regression Fits:", "\n")
-            print.default(object@combo.fit)
-            cat("\n")
-            cat("Posterior Model Odds:", "\n")
-            print.default(object@bmk)
-            cat("\n")
             cat("Posterior Expected Value of Coefficients:", "\n")
-            print.default(object@exp.vals)
+            summary(object@exp.vals)
             cat("\n")
             cat("Posterior Probability Coefficient is Non-zero:", "\n")
-            print.default(object@coefprobs)
+            summary(object@coefprobs)
           })
