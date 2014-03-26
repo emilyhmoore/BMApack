@@ -1,0 +1,11 @@
+library(plyr)
+library(foreach)
+library(multicore)
+library(doMC)
+registerDoMC(cores=10) ##Will need for later for parallel stuff
+core=10
+library(plyr)
+library(foreach)
+library(multicore)
+library(doMC)
+registerDoMC(cores=core) ##Will need for later for parallel stuff

@@ -30,14 +30,18 @@ y<-3*x[,1]+2*x[,2]+rnorm(500)
 
 
 setGeneric(name="fitBMA",
-           def=function(x, y, g=3, parallel=FALSE, ...)
+           def=function(x, y, g=3, parallel=TRUE,core=10,...)
            {standardGeneric("fitBMA")}
 )
 
 
 setMethod(f="fitBMA",
-          definition=function(x, y, g=3, parallel=FALSE){
-  library(plyr) ##Will need for later for parallel stuff
+          definition=function(x, y, g=3, parallel=TRUE,core=10){
+  library(plyr)
+  library(foreach)
+  library(multicore)
+  library(doMC)
+  registerDoMC(cores=core) ##Will need for later for parallel stuff
 
   ##Error thrown if non-unque column names.
   if(length(unique(colnames(x)))<ncol(x)){stop("Must have unique names for each column")}
