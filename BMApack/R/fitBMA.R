@@ -65,7 +65,7 @@ setMethod(f="fitBMA",
   fits<-unlist(fits)
 
   ##get the coefs
-  coefs<-llply(list1, .fun=coef, .parallel=.parallel)
+  coefs<-llply(list1, .fun=coef, .parallel=parallel)
   
   ##Sets names of coefs to the appropriate column name
   for (i in 1:length(coefs)){
