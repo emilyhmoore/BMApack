@@ -6,7 +6,7 @@
 #' @return Prints summaries of coefficients and posterior model odds and returns list 
 #'  \item{exp.vals}{A vector of expected coefficient values}
 #'  \item{coefprobs}{A vector of probabilities that the coefficient is non-zero}
-#' @author Emily Moore
+#' @author Jacob Montgomery, Jae Hee Jung, Emily Moore, Dino Hadzic
 #' @examples
 #' 
 #' x1<-rnorm(500)
@@ -21,17 +21,9 @@
 
 setMethod(f="summary", signature="regcombo",
           definition=function(object){
-            thecoefstrans<-t(object@thecoefs)
-            
-            cat("Coefficient Value Summary", "\n")
-            print(summary(thecoefstrans))
-            cat("\n")
-            
-            cat("Summary of Posterior Model Odds:", "\n")
-            print(summary(object@bmk))
-            cat("\n")
-            
-            cat("Expected Value of Coef and Posterior Probability it is Non-zero:", "\n")
-            return(list(exp.vals=object@exp.vals, coef.probs=object@coefprobs))
+
+##The summary function returns a matrix (table) with the posterior expected value of each coefficient and the posterior probability that each coefficient is non-zero listed by columns.
+return(matrix(c(object@exp.vals,object@coefprobs),ncol=2,dimnames=list(names(object@exp.vals),c("Conditional mean","p(beta!=0|Y)"))))
+       
           })
 
