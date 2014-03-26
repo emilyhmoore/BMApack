@@ -2,7 +2,7 @@
 \alias{fitBMA}
 \title{fitBMA Function}
 \usage{
-fitBMA(x, y, g = 3, parallel = FALSE, ...)
+fitBMA(x, y, g = 3, parallel = TRUE, core = 10, ...)
 }
 \arguments{
   \item{x:}{A numeric matrix of covariates}
@@ -15,7 +15,7 @@ fitBMA(x, y, g = 3, parallel = FALSE, ...)
   \item{parallel:}{runs in parallel if TRUE}
 }
 \value{
-An S4 class object with following slots:
+An bma class object with following slots:
 \item{combo.coef}{A list of coefficients from each
 regression} \item{combo.fit}{Vector of R-squared Values}
 \item{bmk}{Vector of posterior probability odds}
@@ -35,6 +35,7 @@ covars<-cbind(x1,x2)
 fitBMA(x=covars, y=dep)
 }
 \author{
-Emily Moore
+Jacob Montgomery, Dino Hadzic, Jae Hee Jung, and Emily
+Moore
 }
 

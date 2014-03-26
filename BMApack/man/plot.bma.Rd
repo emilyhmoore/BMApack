@@ -1,9 +1,9 @@
 \docType{methods}
-\name{plot,regcombo-method}
-\alias{plot,regcombo-method}
-\title{plot.regcombo Function}
+\name{plot,bma-method}
+\alias{plot,bma-method}
+\title{plot.bma Function}
 \usage{
-\S4method{plot}{regcombo}(x, y = NULL, ...)
+\S4method{plot}{bma}(x, y = NULL, ...)
 }
 \arguments{
   \item{x}{the coordinates of points in the plot.
@@ -41,18 +41,18 @@
   }
 }
 \description{
-Plots regcombo objects as returned by fitBMA. Plots the
-density of the coefficient values. The blue line represents
-the expected value of the coefficient The red line
-represents an expected value of 0. If no blue line is
-visible, the expected value of that coefficient is very
-close to 0. If there is a red and blue line visible, it
-show how far the expected value of the coefficient is from
-0. Sometimes this falls outside of the density range. It
-will print the probability that a coefficient is non-zero
-to the console All of the plots will display, but you may
-need to go through them. For example, in R studio, I have
-to press the left arrow to see the other plots.
+Plots bma objects as returned by fitBMA. Plots the density
+of the coefficient values. The blue line represents the
+expected value of the coefficient The red line represents
+an expected value of 0. If no blue line is visible, the
+expected value of that coefficient is very close to 0. If
+there is a red and blue line visible, it show how far the
+expected value of the coefficient is from 0. Sometimes this
+falls outside of the density range. It will print the
+probability that a coefficient is non-zero to the console
+All of the plots will display, but you may need to go
+through them. For example, in R studio, I have to press the
+left arrow to see the other plots.
 }
 \examples{
 data<-matrix(rnorm(1000), ncol=10)

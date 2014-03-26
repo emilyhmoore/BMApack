@@ -1,14 +1,15 @@
 \docType{methods}
-\name{summary.regcombo}
-\alias{summary.regcombo}
-\title{summary.regcombo Function}
+\name{print,bma-method}
+\alias{print,bma-method}
+\title{Print.bma Function}
 \usage{
-\S4method{summary}{regcombo}(object)
+\S4method{print}{bma}(x, ...)
 }
 \arguments{
-  \item{object:}{A regcombo class object}
+  \item{x}{an object used to select a method.}
 
-  \item{object}{an object for which a summary is desired.}
+  \item{...}{further arguments passed to or from other
+  methods.}
 }
 \value{
 Prints summaries of coefficients and posterior model odds
@@ -17,16 +18,17 @@ coefficient values} \item{coefprobs}{A vector of
 probabilities that the coefficient is non-zero}
 }
 \description{
-Summarizes regcombo objects as returned by fitBMA
+Prints bma objects as returned by fitBMA
 }
 \examples{
 x1<-rnorm(500)
 x2<-rnorm(500,3,15)
 dep<-(x1+2*x2)+rnorm(500,4,100)
 covars<-cbind(x1,x2)
-summary(fitBMA(x=covars, y=dep))
+trial<-fitBMA(x=covars, y=dep)
+print(trial)
 }
 \author{
-Emily Moore
+Jacob Montgomery, Emily Moore, Jae Hee Jung, Dino Hadzic
 }
 

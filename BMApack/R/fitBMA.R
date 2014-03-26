@@ -20,7 +20,7 @@
 #' x2<-rnorm(500,3,15)
 #' dep<-(x1+2*x2)+rnorm(500,4,100)
 #' covars<-cbind(x1,x2) 
-#' fitBMA(x=covars, y=dep)
+#' fitBMA(x=covars, y=dep, parallel=FALSE)
 #' @rdname fitBMA
 #' @export
 
@@ -172,8 +172,7 @@ setMethod(f="fitBMA",
           }#close function definition
 ) ##Close method
 
-thing<-fitBMA(bigx[1:100,1:5], y[1:100], parallel=FALSE)
-print(thing)
-thing@coefprobs
+#thing<-fitBMA(bigx[1:100,1:5], y[1:100], parallel=FALSE)
+
 
 

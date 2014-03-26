@@ -1,9 +1,9 @@
 \docType{methods}
-\name{summary,regcombo-method}
-\alias{summary,regcombo-method}
-\title{summary.regcombo Function}
+\name{summary,bma-method}
+\alias{summary,bma-method}
+\title{summary.bma Function}
 \usage{
-\S4method{summary}{regcombo}(object)
+\S4method{summary}{bma}(object)
 }
 \arguments{
   \item{object}{an object for which a summary is desired.}
@@ -15,7 +15,7 @@ coefficient values} \item{coefprobs}{A vector of
 probabilities that the coefficient is non-zero}
 }
 \description{
-Summarizes regcombo objects as returned by fitBMA
+Summarizes bma objects as returned by fitBMA
 }
 \examples{
 x1<-rnorm(500)
@@ -26,6 +26,6 @@ trial<-fitBMA(x=covars, y=dep)
 summary(trial)
 }
 \author{
-Emily Moore
+Jacob Montgomery, Jae Hee Jung, Emily Moore, Dino Hadzic
 }
 

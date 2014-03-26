@@ -15,10 +15,9 @@ check(current.code)
 ##Example data
 
 help(fitBMA)
-help(summary.regcombo)
-help.search('plot,regcombo-method')
+help.search('summary,bma-method')
 example(fitBMA)
-example(summary.regcombo)
-example('plot,regcombo-method') ##may take a sec
+example('summary,bma-method')
+example('plot,bma-method') ##may take a sec
 
 
