@@ -75,8 +75,17 @@ setMethod(f="fitBMA",
   ##Create a matrix of the values needed to calculate b|mk:m0| for each model
   gs<-rep(g, length(set)) ##make a vector of the g value
   ns<-rep(length(y), length(set)) ##make a vector of the n value
-  pks<-numeric() ##make an empty vector
-  for(i in 1:length(set)){pks[i]<-length(set[[i]])} ##fill in pk values
+  
+  ##pks.fun will later be used in llply function to create vector pks that stores
+  ##length of every element of list "set."
+  pks.fun <- function(i, .parallel=parallel){ 
+    pks <- list()
+    pks <- length(set[[i]])
+    return(pks)
+  }
+  pks <- llply(1:length(set), pks.fun, .parallel=parallel) ##running llply over "set."
+  pks <- unlist(pks) ##unlisting pks
+  pks <- as.numeric(pks) ##assigning numeric class to pks
   r2s<-fits##r2 values
   
   values<-cbind(gs, ns, pks, r2s)##make matrix of these
@@ -95,8 +104,15 @@ setMethod(f="fitBMA",
   sum.bmk<-sum(bmk.vec)
   
   ##Fill in odds for bmk
-  odds.bmk<-NULL
-  for(i in 1:length(bmk.vec)){odds.bmk[i]<-bmk.vec[i]/sum.bmk}
+  ##odds.fun will later be used to calculate odds for bmk.
+  odds.fun <- function(i, .parallel=parallel){ 
+    odds.bmk <- list()
+    odds.bmk <- bmk.vec[i]/sum.bmk
+    return(odds.bmk)
+  }
+  odds.bmk <- llply(1:length(bmk.vec), odds.fun, .parallel=parallel) ##calculating odds, and storing as odds.bmk
+  odds.bmk <- unlist(odds.bmk) ##unlisting odds.bmk
+  odds.bmk <- as.numeric(odds.bmk) ##assigning class numeric to odds.bmk
   
   ##Function which returns x in y since I couldn't find what I was looking for
   xiny<-function(y,x){x %in% y}
