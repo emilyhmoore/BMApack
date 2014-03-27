@@ -69,7 +69,7 @@ setMethod(f="fitBMA",
   list1<-llply(1:length(set), run.regs, .parallel=parallel)
   ##Get rid of the outermost list, so it's one list per regression
   list1<-unlist(list1, recursive=F)
-  
+
   ##This gets the r.squared values and puts them in a list
   fits<-llply(list1, function(x){summary(x)[['r.squared']]}, .parallel=parallel)
   
@@ -179,29 +179,21 @@ setMethod(f="fitBMA",
   ##For each covariate, calculate the sum of model probabilities for models in which the coefficient estimate is larger than zero. Divide that by the sum of model probabilities for all models in which the covariate is included.
   coefprob.largerthanzero <- laply(1:nrow(thecoefs),function(i){sum(themods[i,][index[[i]]])})/as.numeric(aaply(themods,1,sum))
   
-  ##The run.regs2 function performs a similar task as run.regs, except it is used 
-  ##to extract standard errors instead of coefficients.
+  ##The run.regs2 function takes list 1 from above, which is a list of models and extracts the SEs of 
+  ##each coef from this list so that the regressions do not need to be rerun. 
   run.regs2 <- function(i, .parallel=parallel){
-    list2 <- list(NULL)
-    list2 <- list(summary(lm(scale(y)~-1+scale(x[,set[[i]]])))$coefficients[,2])
+    list2<-summary(list1[[i]])$coefficients[,2]
     return(list2)
   }
-  
+
   list2<-llply(1:length(set), run.regs2, .parallel=parallel)
   
   list2 <- unlist(list2, recursive=F)
-  
-  
-  ##SE.fun will later be used to extract the standard erros from the analysis. 
-  ##This function also uses the setNames function in order to identify the 
-  ##variable for each standard error.
-  SE.fun <- function(i, .parallel=paralell){
-    SEs <- list()
-    SEs <- setNames(list2[[i]], colnames(x)[set[[i]]])
-    return(SEs)
-  }
-  SEs <-llply(1:length(set), SE.fun, .parallel=parallel)
-  
+
+  set2<-unlist(set)
+  names(list2)<-colnames(x)[set2]
+  SEs<-list2
+
   ##The below code creates a matrix of standard errors from the various models,
   ##and then performs matrix multiplication using the model odds, odds.bmk,
   ##after which the weighted standard errors are stored as PosteriorSE,
@@ -221,7 +213,7 @@ setMethod(f="fitBMA",
           }#close function definition
 ) ##Close method
 
-#thing<-fitBMA(bigx[1:100,1:5], y[1:100], parallel=FALSE)
+thing<-fitBMA(x, y, parallel=FALSE)
 
 
 
