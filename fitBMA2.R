@@ -50,7 +50,7 @@ setMethod(f="fitBMA",
   
   ##Error thrown if non-unque column names.
   if(length(unique(colnames(x)))<ncol(x)){stop("Must have unique names for each column")}
-  
+
   ##making the set
   set <- llply(1:ncol(x),function(X){combn(ncol(x),X,simplify=F)}, 
                .parallel=parallel)
@@ -87,7 +87,7 @@ setMethod(f="fitBMA",
   
   #Extracts the coefficients.
   coefs<-llply(1:length(set), coef.fun, .parallel=parallel)   
-
+  
   ##Create a matrix of the values needed to calculate b|mk:m0| for each model
   gs<-rep(g, length(set)) ##make a vector of the g value
   ns<-rep(length(y), length(set)) ##make a vector of the n value
@@ -199,14 +199,15 @@ setMethod(f="fitBMA",
   ##after which the weighted standard errors are stored as PosteriorSE,
   ##for the slot exp.ses (expected standard errors).
 
-  SEmatrix <- matrix(0, ncol=length(SEs), nrow=ncol(x))
+  SEmatrix <- matrix(0, ncol=length(set), nrow=ncol(x))  
   rownames(SEmatrix) <- paste("x", 1:ncol(x), sep="")
   matnames <- rownames(SEmatrix)
-  SEmatrix <- maply(1:length(SEs),function(x){SEs[x][matnames]})
 
-SEmatrix <- t(as.matrix(SEmatrix))
+##This line appears to be the problem
+  SEmatrix <- maply(1:length(set),function(x){SEs[x][matnames]})
+
+  SEmatrix <- t(as.matrix(SEmatrix))
   SEmatrix[is.na(SEmatrix)] <- 0
-
   PosteriorSE <- SEmatrix %*% odds.bmk
   PosteriorSE <- as.numeric(PosteriorSE)
   names(PosteriorSE) <- paste("x", 1:ncol(x), sep="")
