@@ -179,6 +179,43 @@ setMethod(f="fitBMA",
   ##For each covariate, calculate the sum of model probabilities for models in which the coefficient estimate is larger than zero. Divide that by the sum of model probabilities for all models in which the covariate is included.
   coefprob.largerthanzero <- laply(1:nrow(thecoefs),function(i){sum(themods[i,][index[[i]]])})/as.numeric(aaply(themods,1,sum))
   
+  ##The run.regs2 function performs a similar task as run.regs, expect it is used 
+  ##to extract standard errors instead of coefficients.
+  run.regs2 <- function(i, .parallel=parallel){
+    list2 <- list(NULL)
+    list2 <- list(summary(lm(scale(y)~-1+scale(x[,set[[i]]])))$coefficients[,2])
+    return(list2)
+  }
+  
+  list2<-llply(1:length(set), run.regs2, .parallel=parallel)
+  
+  list2 <- unlist(list2, recursive=F)
+  
+  
+  ##SE.fun will later be used to extract the standard erros from the analysis. 
+  ##This function also uses the setNames function in order to identify the 
+  ##variable for each standard error.
+  SE.fun <- function(i, .parallel=paralell){
+    SEs <- list()
+    SEs <- setNames(list2[[i]], colnames(x)[set[[i]]])
+    return(SEs)
+  }
+  SEs <-llply(1:length(set), SE.fun, .parallel=parallel)
+  
+  ##The below code creates a matrix of standard errors from the various models,
+  ##and then performs matrix multiplication using the model odds, odds.bmk,
+  ##after which the weighted standard errors are stored as PosteriorSE,
+  ##for the slot exp.ses (expected standard errors).
+  SEmatrix <- matrix(0, ncol=length(SEs), nrow=ncol(x))
+  rownames(SEmatrix) <- paste("x", 1:ncol(x), sep="")
+  matnames <- rownames(SEmatrix)
+  SEmatrix <- maply(1:length(SEs),function(x){SEs[[x]][matnames]})
+  SEmatrix <- t(as.matrix(SEmatrix))
+  SEmatrix[is.na(SEmatrix)] <- 0
+  PosteriorSE <- SEmatrix %*% odds.bmk
+  PosteriorSE <- as.numeric(PosteriorSE)
+  names(PosteriorSE) <- paste("x", 1:ncol(x), sep="")
+  
   return(new("bma", x=x, y=y, thecoefs=thecoefs, combo.coef=coefs, 
              combo.fit=fits,bmk=odds.bmk, exp.vals=exp.val, coefprobs=coefprob, coefprobs.largerthanzero=coefprob.largerthanzero))
           }#close function definition
