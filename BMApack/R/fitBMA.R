@@ -216,7 +216,7 @@ setMethod(f="fitBMA",
   PosteriorSE <- as.numeric(PosteriorSE)
   names(PosteriorSE) <- paste("x", 1:ncol(x), sep="")
   
-  return(new("bma", x=x, y=y, thecoefs=thecoefs, combo.coef=coefs, 
+  return(new("bma", x=x, y=y, thecoefs=thecoefs, combo.coef=coefs, exp.ses=PosteriorSE,
              combo.fit=fits,bmk=odds.bmk, exp.vals=exp.val, coefprobs=coefprob, coefprobs.largerthanzero=coefprob.largerthanzero))
           }#close function definition
 ) ##Close method
