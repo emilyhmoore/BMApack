@@ -175,3 +175,10 @@ y <-rnorm(10)
 x
 y
 fitBMA(x,y)
+library(devtools)
+library(roxygen2)
+current.code <- as.package("BMAPack")
+load_all(current.code)
+library(devtools)
+library(roxygen2)
+current.code <- as.package("BMAPack")
