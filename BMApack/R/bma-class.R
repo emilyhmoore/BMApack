@@ -9,6 +9,7 @@
 #' \item \code{combo.fit} A vector of R-Squared values
 #' \item \code{bmk}
 #' \item \code{exp.vals}
+#' \item \code{exp.ses}
 #' \item \code{the coefs}
 #' \item \code{coefprobs}
 #' \item \code{coefprobs.largerthanzero}
@@ -24,6 +25,7 @@ setClass(Class="bma",
            combo.fit="numeric",
            bmk="numeric",
            exp.vals="numeric",
+           exp.ses="numeric",
            thecoefs="matrix",
            coefprobs="numeric",
            coefprobs.largerthanzero="numeric",
@@ -35,6 +37,7 @@ setClass(Class="bma",
            combo.fit=numeric(),
            bmk=numeric(),
            exp.vals=numeric(),
+           exp.ses=numeric(),
            thecoefs=matrix(),
            coefprobs=numeric(),
            coefprobs.largerthanzero=numeric(),
