@@ -757,3 +757,77 @@ y <- rnorm(10)
 fitBMA(x,y)
 h <- fitBMA(x,y)
 summary(h)
+library(devtools)
+library(roxygen2)
+current.code <- as.package("BMAPack")
+load_all(current.code)
+document(current.code)
+help(fitBMA)
+install(pkg=current.code, local=TRUE)
+help(fitBMA)
+help.search('summary,bma-method')
+example(fitBMA)
+example('summary,bma-method')
+example('plot,bma-method') ##may take a sec
+x <- matrix(rnorm(30),ncol=3)
+colnames(x) <- paste("X",1:3,sep="")
+y <- rnorm(10)
+run.regs2 <- function(i){#
+    list2 <- list(NULL)#
+    list2 <- list(summary(lm(scale(y)~-1+scale(x[,set[[i]]])))$coefficients[,2])#
+    return(list2)#
+  }
+library(plyr)
+set <- llply(1:ncol(x),function(X){combn(ncol(x),X,simplify=F)},
+set <- llply(1:ncol(x),function(X){combn(ncol(x),X,simplify=F)})
+se
+set
+set<-unlist(set, recursive=F)
+run.regs2
+list2<-llply(1:length(set), run.regs2)
+list2
+list2 <- unlist(list2, recursive=F)
+list2
+SE.fun <- function(i){#
+    SEs <- list()#
+    SEs <- setNames(list2[[i]], colnames(x)[set[[i]]])#
+    return(SEs)#
+  }
+list2
+x
+set
+SEs <-llply(1:length(set), SE.fun)
+SEs
+SEmatrix <- matrix(0, ncol=length(SEs), nrow=ncol(x))
+Ses
+SEs
+SEmatrix
+rownames(SEmatrix) <- paste("x", 1:ncol(x), sep="")
+SEmatrix
+matnames <- rownames(SEmatrix)
+matnames
+SEmatrix <- maply(1:length(SEs),function(x){SEs[[x]][matnames]})
+SEmatrix
+SEmatrix <- t(as.matrix(SEmatrix))
+SEmatrix
+SEmatrix[is.na(SEmatrix)] <- 0
+PosteriorSE <- SEmatrix %*% odds.bmk
+plot
+x
+y
+fitBMA(x,y)
+x <- fitBMA(x,y)
+probs <- 1-x@coefprobs
+probs
+str(x)
+coef.plot <- function(i){#
+              plot(density(rnorm(n=nrow(x@x), mean=x@exp.vals[i], sd=x@exp.ses[i])), #
+                   main=paste("Variable", i), xlab="", ylab="")#
+              segments(0,0,0,probs[i], lwd=3)#
+            }
+plot(density(rnorm(n=nrow(x@x), mean=x@exp.vals[1], sd=x@exp.ses[1])), #
+                   main=paste("Variable", 1), xlab="", ylab="")
+probs
+segments(0,0,0,probs[1], lwd=3)
+l_ply(1:length(x@exp.vals), coef.plot)
+x@exp.vals

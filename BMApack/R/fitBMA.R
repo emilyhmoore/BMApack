@@ -179,7 +179,7 @@ setMethod(f="fitBMA",
   ##For each covariate, calculate the sum of model probabilities for models in which the coefficient estimate is larger than zero. Divide that by the sum of model probabilities for all models in which the covariate is included.
   coefprob.largerthanzero <- laply(1:nrow(thecoefs),function(i){sum(themods[i,][index[[i]]])})/as.numeric(aaply(themods,1,sum))
   
-  ##The run.regs2 function performs a similar task as run.regs, expect it is used 
+  ##The run.regs2 function performs a similar task as run.regs, except it is used 
   ##to extract standard errors instead of coefficients.
   run.regs2 <- function(i, .parallel=parallel){
     list2 <- list(NULL)
