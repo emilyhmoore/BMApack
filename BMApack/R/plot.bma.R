@@ -1,18 +1,12 @@
 #' plot.bma Function
 #'
 #' Plots bma objects as returned by fitBMA.
-#' Plots the density of the coefficient values.
-#' The blue line represents the expected value of the coefficient
-#' The red line represents an expected value of 0. 
-#' If no blue line is visible, the expected value of that coefficient is very close to 0.
-#' If there is a red and blue line visible, it show how far the expected value of the
-#' coefficient is from 0.
-#' Sometimes this falls outside of the density range.
-#' It will print the probability that a coefficient is non-zero to the console
-#' All of the plots will display, but you may need to go through them.
-#' For example, in R studio, I have to press the left arrow to see the other plots.
+#' Plots the density of the normal distribution centered at expected coefficient and with a standard 
+#' deviation equal to the weighted standard error of variable.
+#' Also plots line segment centered at zero indicating probability that coefficient is zero.
+#' Will need to scroll through the plots, each corresponding to a particular variable.
 #'
-#' @author Emily Moore
+#' @author Jacob Montgomery, Dino Hadzic, Jae Hee Jung, and Emily Moore
 #' @examples
 #' 
 #' data<-matrix(rnorm(1000), ncol=10)
@@ -23,25 +17,15 @@
 #' @rdname plot.bma
 #' @export
 #' 
-
 setMethod(f="plot", signature="bma",
-          definition=function(x,y=NULL,...){
-            y=NULL
-            thecoefs2<-t(x@thecoefs)
-            plot.the.coefs<-function(i){
-              lowlim<-min(c(0, thecoefs2[,i], x@exp.vals[i])) ##set low limit
-              highlim<-max(c(0, thecoefs2[,i], x@exp.vals[i])) ##set high limit
-              ##plot
-              varnames<-(colnames(thecoefs2))
-              plot(density(thecoefs2[,i]),
-                   xlim=c(lowlim, highlim),
-                   main=paste("Density Plot of Coef Values for Variable",
-                              varnames[i]))
-              abline(v=c(x@exp.vals[i],0), col=c("blue", "red"))
+          definition=function(x,y,...){
+            devAskNewPage(TRUE)
+            probs <- 1-x@coefprobs
+            coef.plot <- function(i){
+              plot(density(rnorm(n=nrow(x@x), mean=x@exp.vals[i], sd=x@exp.ses[i])), 
+                   main=paste("Variable", i), xlab="", ylab="")
+              segments(0,0,0,probs[i], lwd=3)
             }
-            library(plyr)
-            l_ply(1:ncol(thecoefs2), plot.the.coefs)
-            print(x@exp.vals)
-            print(x@coefprobs)
+            l_ply(1:length(x@exp.vals), coef.plot)
           })
 
