@@ -11,8 +11,8 @@ An object of the class `bma' has the following slots:
 \itemize{ \item \code{combo.coef} A list of coefficients
 for each possible regression \item \code{combo.fit} A
 vector of R-Squared values \item \code{bmk} \item
-\code{exp.vals} \item \code{the coefs} \item
-\code{coefprobs} \item \code{coefprobs.largerthanzero}
+\code{exp.vals} \item \code{exp.ses} \item \code{the coefs} 
+\item \code{coefprobs} \item \code{coefprobs.largerthanzero}
 \item \code{x} A matrix input of covariates \item \code{y}
 The dependent variable input (vector) }
 }
