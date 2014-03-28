@@ -130,42 +130,35 @@ setMethod(f="fitBMA",
   odds.bmk <- unlist(odds.bmk) ##unlisting odds.bmk
   odds.bmk <- as.numeric(odds.bmk) ##assigning class numeric to odds.bmk
   
-  ##Function which returns x in y since I couldn't find what I was looking for
-  xiny<-function(y,x){x %in% y}
+  ##Get the names of the covariates whose coefficients are estimated for each model. 
+  covariates.mod <- llply(coefs,names)
   
-  ##Function which determines which sets in the set of models include each variable
-  applier<-function(i){
-    index2<-laply(set, xiny, x=i, .parallel=parallel) ##is it included in this one? True/false
-    index2<-which(index2==TRUE) ##Which ones are true?
-    return(index2)
-  }
-
-  ##Function which returns the odds of each model including the relevant variable
-  theodds<-function(i){
-    index3<-laply(1:ncol(x), applier, .parallel=parallel)
-    odds.bmk[index3[i,]]
-  }
-
-  ##Get the probability values of the mods in question and put them in a matrix
-  themods<-laply(1:ncol(x), theodds, .parallel=parallel)
+  	##Identify the covariates.
+	covariates <- unique(unlist(covariates.mod))
+	
+	##Find the number of covariates used in each model.
+	covariate.number <- sapply(coefs,length)
+	
+	##Create an empty list. Fill it with the coefficient estimates of each model, indicating the coefficients of covariates that the model does not compute as NA.
+  mod <- vector("list",length(covariate.number))
   
-  ##Get the relevant coefs
-  coefnamer<-function(i){
-    coefvec<-unlist(coefs) ##turn list of coefs into a vector.
-    coefname<-which(names(coefvec)==colnames(x)[i]) ##Which coefs have a matching name
-    coef1<-coefvec[coefname]
-    return(coef1)
+  for(i in seq_along(covariate.number)){
+			mod[[i]] <- unname(coefs[[i]])[match(covariates,covariates.mod[[i]])]
+		}
+	
+	##Turn the list into a matrix.
+thecoefs <- 	setNames(as.matrix(do.call(rbind,mod),stringsAsFactors=FALSE),nm=covariates)
+  
+  themods <- thecoefs
+  
+  ##Replace the coefficient estimates with the odds of each model that the covariate is included. 
+  for(i in 1:length(odds.bmk)){
+  	themods[i,][which(!is.na(themods[i,]))] <- odds.bmk[i]
   }
-
-##Apply coefnamer function over the columns of x
-  thecoefs<-llply(1:ncol(x), coefnamer, .parallel=parallel) 
-  thecoefs<-unlist(thecoefs)
-  thecoefs<-matrix(thecoefs, nrow=ncol(x), byrow=TRUE)
-  rownames(thecoefs)<-colnames(x)
 
   ptimese<-themods*thecoefs ##Utilize R's practice of element-wise multiplication of matrices
 
-  exp.val1<-aaply(ptimese, 1, sum, .parallel=parallel) ##Sum across the rows
+  exp.val1<-aaply(ptimese, 2, sum, .parallel=parallel,na.rm=TRUE) ##Sum across the rows
 
   exp.val<-exp.val1*(g/(g+1)) ##Multiply by g/g+1
   names(exp.val)<-colnames(x)
