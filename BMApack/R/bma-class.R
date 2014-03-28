@@ -10,6 +10,7 @@
 #' \item \code{bmk}
 #' \item \code{exp.vals}
 #' \item \code{thecoefs}
+#' \item \code{theses}
 #' \item \code{coefprobs}
 #' \item \code{coefprobs.largerthanzero}
 #' \item \code{conditional.sds}
@@ -26,6 +27,7 @@ setClass(Class="bma",
            bmk="numeric",
            exp.vals="numeric",
            thecoefs="matrix",
+           theses="matrix",
            coefprobs="numeric",
            coefprobs.largerthanzero="numeric",
            conditional.sds="numeric",
@@ -38,6 +40,7 @@ setClass(Class="bma",
            bmk=numeric(),
            exp.vals=numeric(),
            thecoefs=matrix(),
+           theses=matrix(),
            coefprobs=numeric(),
            coefprobs.largerthanzero=numeric(),
            conditional.sds=numeric(),
