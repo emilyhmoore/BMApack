@@ -1,5 +1,5 @@
 char.vec<-paste("var", 1:5)
-
+input<-char.vec
 ##either.or variables are those in which one is included or the other but never both
 ##all.nothing variables are those in which a set should always be included or never included 
 ##one.if.other are variables such as squares and interactions that must include constituent terms
@@ -11,7 +11,7 @@ model.selector<-function(input, either.or=NULL, all.nothing=NULL, one.if.other=N
   if(length(one.if.other)==1){stop("If specifying one.if.other, it must have at least two variables")}
   
   names<-(input) ##For now since the input is a character vector, it's just the input
-  
+
   set <- llply(1:length(input),function(X){combn(length(input),X,simplify=F)}, 
                .parallel=parallel)
   
@@ -22,24 +22,20 @@ model.selector<-function(input, either.or=NULL, all.nothing=NULL, one.if.other=N
   named.set<-llply(1:length(set), function(i){names[set[[i]]]}, .parallel=parallel)
   
   good.models<-list()
-  
-  if(length(all.nothing)==0){good.models<-set} else{
-    ##are the variables in there?
-    all.nothingset<-llply(1:length(named.set), function(i){all.nothing %in% named.set[[i]]}, .parallel=parallel)
-    
-    ##if the length of the unique is one, it means either all or none of the all.nothings are included
-    theall.nothings<-llply(1:length(all.nothingset),function(i){length(unique(all.nothingset[[i]]))==1},
-                           .parallel=parallel)
-    
-    ##these are th emodels we want, so which ones are they??
-    pick.me<-which(theall.nothings==TRUE)
-    
-    ##This is the reduced set of models
-    good.models<-named.set[pick.me]
+
+  thetests<-function(i){
+    theall.nothings<-length(unique(all.nothing %in% named.set[[i]]))==1 ##we want true here
+    theeither.ors<-
+
+    return(theall.nothings)   
   }
+
+    ##are the variables in there?
+    good.models<-llply(1:length(named.set), thetests ,.parallel=parallel)
+
+named.set[unlist(good.models)]
   
-  good.models2<-list()
-  if(length(either.or)==0){good.models2<-good.models} else{
+  
     either.orset<-llply(1:length(good.models), function(i){either.or %in% good.models[[i]]},
                         .parallel=parallel)
     
