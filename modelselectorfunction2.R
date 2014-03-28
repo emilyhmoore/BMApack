@@ -29,17 +29,18 @@ model.selector<-function(input, either.or=NULL, all.nothing=NULL, one.if.other=N
                       any(all.nothing %in% named.set[[i]]==FALSE))##good models are true
     theoneif.others<-((one.if.other %in% named.set[[i]])[1]==TRUE & 
                       all((one.if.other %in% named.set[[i]])[2:length(one.if.other)])==FALSE)==FALSE 
-                      ##good models come out of this mess^ as TRUE
+                      ##good models come out of this mess^ as TRUE so I can use all in the next part.
     good<-all(theall.nothings, theeither.ors, theoneif.others)
     return(good)   
   }
   
-    ##are the variables in there?
+    ##extracting the good models. 
     good.models<-llply(1:length(named.set), thetests ,.parallel=parallel)
 
-    named.set[unlist(good.models)]
+    ##These models survived the culling.
+    the.survivors<-named.set[unlist(good.models)]
 
-  return(good.models3)
+    return(good.models3)
 }
 
 system.time(trial<-model.selector(char.vec, 
