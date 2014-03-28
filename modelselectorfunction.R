@@ -31,7 +31,7 @@ model.selector<-function(input, either.or=NULL, all.nothing=NULL, one.if.other=N
   theall.nothings<-llply(1:length(all.nothingset),function(i){length(unique(all.nothingset[[i]]))==1},
                          .parallel=parallel)
 
-  ##these are th emodels we want, so which ones are they??
+  ##these are the models we want, so which ones are they??
   pick.me<-which(theall.nothings==TRUE)
   
   ##This is the reduced set of models

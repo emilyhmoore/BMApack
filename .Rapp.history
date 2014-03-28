@@ -831,3 +831,184 @@ probs
 segments(0,0,0,probs[1], lwd=3)
 l_ply(1:length(x@exp.vals), coef.plot)
 x@exp.vals
+library(devtools)
+library(roxygen2)
+current.code <- as.package("BMAPack")
+load_all(current.code)
+document(current.code)
+x <- matrix(rnorm(40),ncol=3)
+x <- matrix(rnorm(40),ncol=4)
+colnames(x) <- paste("X",1:4,sep="")
+y <- rnorm(10)
+fitBMA(x,y)
+summar(fitBMA(x,y))
+summary(fitBMA(x,y))
+plot(x,y)
+plot(fitBMA(x,y))
+plot(fitBMA(x,y))
+char.vec<-paste("var", 1:15)
+char.vec
+input <- char.vec[c(1,2)]
+input
+names<-(input) ##For now since the input is a character vector, it's just the input
+names
+parallel <- FALSE
+set <- llply(1:length(input),function(X){combn(length(input),X,simplify=F)}, #
+               .parallel=parallel)
+set
+set<-unlist(set, recursive=F)
+set
+names[set[[1]]]
+names
+names[set[[3]]]
+named.set<-llply(1:length(set), function(i){names[set[[i]]]}, .parallel=parallel)
+named.set
+good.models<-list()
+all.nothing
+all.nothing<- naes
+all.nothing<- names
+all.nothing
+all.nothing %in% named.set[[1]]
+named.set
+all.nothing %in% named.set[[2]]
+all.nothing %in% named.set[[3]]
+if(length(all.nothing)==0){good.models<-set} else{#
+  ##are the variables in there?#
+  all.nothingset<-llply(1:length(named.set), function(i){all.nothing %in% named.set[[i]]}, .parallel=parallel)
+all.nothingset<-llply(1:length(named.set), function(i){all.nothing %in% named.set[[i]]}, .parallel=parallel)
+all.nothingset
+unique(all.nothingset[[1]])
+unique(all.nothingset[[2]])
+unique(all.nothingset[[3]])
+theall.nothings<-llply(1:length(all.nothingset),function(i){length(unique(all.nothingset[[i]]))==1},#
+                         .parallel=parallel)
+theall.nothings
+pick.me<-which(theall.nothings==TRUE)
+pick.me
+named.set
+good.models<-named.set[pick.me]
+good.models
+good.models2<-list()
+either.orset<-llply(1:length(good.models), function(i){either.or %in% good.models[[i]]},#
+                      .parallel=parallel)
+named
+names
+either.or<-names
+either.orset<-llply(1:length(good.models), function(i){either.or %in% good.models[[i]]},#
+                      .parallel=parallel)
+either.orset
+good.models
+theeither.ors<-llply(1:length(either.orset),function(i){length(unique(either.orset[[i]]))==1},#
+                       .parallel=parallel)
+theeither.ors
+either.or
+pick.me2<-which(theeither.ors==FALSE)
+pick.me2
+good.models2<-good.models[pick.me2]
+good.models2
+good.models3<-list()
+one.if.other <- names
+one.if.other
+good.models
+one.if.otherset<-llply(1:length(good.models), function(i){one.if.other %in% good.models[[i]]},#
+                         .parallel=parallel)
+one.if.otherset
+good.models
+one.if.other
+one.in.model<-llply(1:length(one.if.otherset), #
+                      function(i){#
+                        one.if.otherset[[i]][1]==TRUE & #
+                          all(one.if.otherset[[i]][2:length(one.if.other)])==FALSE#
+                      },#
+                      .parallel=parallel#
+                      )
+one.in.model
+pick.me3<-which(one.in.model==FALSE)
+pick.me3
+good.models3<-good.models2[pick.me3]
+good.models3
+char.vec
+model.selector(char.vec, #
+               either.or=NULL, #
+               all.nothing=c("var 1", "var 2"),#
+               one.if.other=c("var 3", "var 4", "var 5")#
+               )
+char.vec<-paste("var", 1:15)#
+#
+##either.or variables are those in which one is included or the other but never both#
+##all.nothing variables are those in which a set should always be included or never included #
+##one.if.other are variables such as squares and interactions that must include constituent terms#
+#
+model.selector<-function(input, either.or=NULL, all.nothing=NULL, one.if.other=NULL, parallel=FALSE){#
+  if(length(all.nothing)==1){stop("If specifying All.nothing, it must have at least two variables")}#
+  if(length(either.or)==1){stop("If specifying Either.or, it must have at least two variables")}#
+  if(length(one.if.other)==1){stop("If specifying one.if.other, it must have at least two variables")}#
+  names<-(input) ##For now since the input is a character vector, it's just the input#
+  set <- llply(1:length(input),function(X){combn(length(input),X,simplify=F)}, #
+               .parallel=parallel)#
+  ##making each combination a single list item#
+  set<-unlist(set, recursive=F)#
+  ##setting variable names#
+  named.set<-llply(1:length(set), function(i){names[set[[i]]]}, .parallel=parallel)#
+  good.models<-list()#
+#
+  if(length(all.nothing)==0){good.models<-set} else{#
+  ##are the variables in there?#
+  all.nothingset<-llply(1:length(named.set), function(i){all.nothing %in% named.set[[i]]}, .parallel=parallel)#
+#
+  ##if the length of the unique is one, it means either all or none of the all.nothings are included#
+  theall.nothings<-llply(1:length(all.nothingset),function(i){length(unique(all.nothingset[[i]]))==1},#
+                         .parallel=parallel)#
+#
+  ##these are the models we want, so which ones are they??#
+  pick.me<-which(theall.nothings==TRUE)#
+  ##This is the reduced set of models#
+  good.models<-named.set[pick.me]#
+  }#
+  good.models2<-list()#
+  if(length(either.or)==0){good.models2<-good.models} else{#
+  either.orset<-llply(1:length(good.models), function(i){either.or %in% good.models[[i]]},#
+                      .parallel=parallel)#
+#
+  ##if the length of the unique is one, it means either all or none of the all.nothings are included#
+  theeither.ors<-llply(1:length(either.orset),function(i){length(unique(either.orset[[i]]))==1},#
+                       .parallel=parallel)#
+  pick.me2<-which(theeither.ors==FALSE)#
+#
+  good.models2<-good.models[pick.me2]#
+  }#
+  good.models3<-list()#
+  if(length(one.if.other)==0){good.models3<-good.models2} else{#
+  one.if.otherset<-llply(1:length(good.models), function(i){one.if.other %in% good.models[[i]]},#
+                         .parallel=parallel)#
+  ##the all function returns TRUE if ALL of the values are true. This calls the model a TRUE #
+  ##if the first variable in #
+  ##the string IS INCLUDED and ANY of the other variables are not. #
+  ##If the first variable is not included or the variable of interest AND ALL the others are included, it #
+  ##will be a FALSE. I.e. if variable 3 should be included only when 4 is, and only 3 is there, it calls#
+  ##that model a TRUE. #
+  one.in.model<-llply(1:length(one.if.otherset), #
+                      function(i){#
+                        one.if.otherset[[i]][1]==TRUE & #
+                          all(one.if.otherset[[i]][2:length(one.if.other)])==FALSE#
+                      },#
+                      .parallel=parallel#
+                      )#
+  pick.me3<-which(one.in.model==FALSE)#
+#
+  good.models3<-good.models2[pick.me3]#
+#
+  } ##close if else#
+#
+  return(good.models3)#
+}
+model.selector(char.vec, #
+               either.or=NULL, #
+               all.nothing=c("var 1", "var 2"),#
+               one.if.other=c("var 3", "var 4", "var 5")#
+               )
+system.time(trial<-model.selector(char.vec, #
+               either.or=NULL, #
+               all.nothing=c("var 1", "var 2"),#
+               one.if.other=c("var 3", "var 4", "var 5")#
+               ))
