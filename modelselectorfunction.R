@@ -1,4 +1,4 @@
-char.vec<-paste("var", 1:15)
+char.vec<-paste("var", 1:5)
 
 ##either.or variables are those in which one is included or the other but never both
 ##all.nothing variables are those in which a set should always be included or never included 
