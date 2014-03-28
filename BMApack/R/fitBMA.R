@@ -199,7 +199,7 @@ ses <- llply(1:length(list2),function(i){
   conditional.sd <- sqrt(aaply(theses^2*themods,2,sum,na.rm=TRUE))
   
   
-  return(new("bma", x=x, y=y, thecoefs=thecoefs, combo.coef=coefs,
+  return(new("bma", x=x, y=y, thecoefs=thecoefs, combo.coef=coefs, theses=theses,
              combo.fit=fits,bmk=odds.bmk, exp.vals=exp.val, coefprobs=coefprob, coefprobs.largerthanzero=coefprob.largerthanzero,conditional.sds=conditional.sd))
           }#close function definition
 ) ##Close method
