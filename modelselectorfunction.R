@@ -6,9 +6,12 @@ char.vec<-paste("var", 1:5)
 
 model.selector<-function(input, either.or=NULL, all.nothing=NULL, one.if.other=NULL){
   
-  if(length(all.nothing)==1){stop("All.nothing must have at least two variables")}
+  if(length(all.nothing)==1){stop("If specifying All.nothing, it must have at least two variables")}
+  if(length(either.or)==1){stop("If specifying Either.or, it must have at least two variables")}
+  if(length(one.if.other)==1){stop("If specifying one.if.other, it must have at least two variables")}
   
-  names<-(input)
+  names<-(input) ##For now since the input is a character vector, it's just the input
+  
   set <- llply(1:length(input),function(X){combn(length(input),X,simplify=F)}, 
                .parallel=parallel)
   
@@ -46,7 +49,34 @@ model.selector<-function(input, either.or=NULL, all.nothing=NULL, one.if.other=N
   good.models2<-good.models[pick.me2]
   }
   
-  return(good.models2)
+  good.models3<-list()
+  if(length(one.if.other)==0){good.models3<-good.models2} else{
+  one.if.otherset<-llply(1:length(good.models), function(i){one.if.other %in% good.models[[i]]})
+  
+  ##the all function returns TRUE if ALL of the values are true. This calls the model a TRUE 
+  ##if the first variable in 
+  ##the string IS INCLUDED and ANY of the other variables are not. 
+  ##If the first variable is not included or the variable of interest AND ALL the others are included, it 
+  ##will be a FALSE. I.e. if variable 3 should be included only when 4 is, and only 3 is there, it calls
+  ##that model a TRUE. 
+  
+  one.in.model<-llply(1:length(one.if.otherset), 
+                      function(i){
+                        one.if.otherset[[i]][1]==TRUE & 
+                          all(one.if.otherset[[i]][2:length(one.if.other)])==FALSE
+                      }
+                )
+  
+  pick.me3<-which(one.in.model==FALSE)
+
+  good.models3<-good.models2[pick.me3]
+
+  } ##close if else
+
+  return(good.models3)
 }
 
-model.selector(char.vec, either.or=c("var 3", "var 4"), all.nothing=c("var 1", "var 2"),one.if.other=NULL)
+model.selector(char.vec, either.or=NULL, all.nothing=c("var 1", "var 2"),
+               one.if.other=c("var 3", "var 4", "var 5"))
+
+
