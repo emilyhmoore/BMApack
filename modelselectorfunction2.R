@@ -1,4 +1,4 @@
-char.vec<-paste("var", 1:5)
+char.vec<-paste("var", 1:7)
 input<-char.vec
 ##either.or variables are those in which one is included or the other but never both
 ##all.nothing variables are those in which a set should always be included or never included 
@@ -25,54 +25,28 @@ model.selector<-function(input, either.or=NULL, all.nothing=NULL, one.if.other=N
 
   thetests<-function(i){
     theall.nothings<-length(unique(all.nothing %in% named.set[[i]]))==1 ##we want true here
-    theeither.ors<-
-
-    return(theall.nothings)   
+    theeither.ors<-((length(unique(either.or %in% named.set[[i]]))==1)==FALSE | 
+                      any(all.nothing %in% named.set[[i]]==FALSE))##good models are true
+    theoneif.others<-((one.if.other %in% good.models[[i]])[1]==TRUE & 
+                      all(one.if.otherset[[i]][2:length(one.if.other)])==FALSE)==FALSE ##good models come out of this mess as TRUE
+    good<-theall.nothings==theeither.ors & all(theall.nothings, theeither.ors)
+    return(good)   
   }
+
+                        one.if.otherset[[i]][1]==TRUE & 
+                          
 
     ##are the variables in there?
     good.models<-llply(1:length(named.set), thetests ,.parallel=parallel)
 
-named.set[unlist(good.models)]
+good.models
+  named.set[unlist(good.models)]
   
-  
-    either.orset<-llply(1:length(good.models), function(i){either.or %in% good.models[[i]]},
-                        .parallel=parallel)
-    
-    ##if the length of the unique is one, it means either all or none of the all.nothings are included
-    theeither.ors<-llply(1:length(either.orset),function(i){length(unique(either.orset[[i]]))==1},
-                         .parallel=parallel)
-    
-    pick.me2<-which(theeither.ors==FALSE)
-    
-    good.models2<-good.models[pick.me2]
-  }
-  
-  good.models3<-list()
-  if(length(one.if.other)==0){good.models3<-good.models2} else{
-    one.if.otherset<-llply(1:length(good.models), function(i){one.if.other %in% good.models[[i]]},
-                           .parallel=parallel)
-    
-    ##the all function returns TRUE if ALL of the values are true. This calls the model a TRUE 
-    ##if the first variable in 
-    ##the string IS INCLUDED and ANY of the other variables are not. 
-    ##If the first variable is not included or the variable of interest AND ALL the others are included, it 
-    ##will be a FALSE. I.e. if variable 3 should be included only when 4 is, and only 3 is there, it calls
-    ##that model a TRUE. 
-    
-    one.in.model<-llply(1:length(one.if.otherset), 
-                        function(i){
-                          one.if.otherset[[i]][1]==TRUE & 
-                            all(one.if.otherset[[i]][2:length(one.if.other)])==FALSE
-                        },
-                        .parallel=parallel
-    )
+
     
     pick.me3<-which(one.in.model==FALSE)
     
-    good.models3<-good.models2[pick.me3]
-    
-  } ##close if else
+
   
   return(good.models3)
 }
