@@ -158,19 +158,19 @@ thecoefs <- 	setNames(as.matrix(do.call(rbind,mod),stringsAsFactors=FALSE),nm=co
 
   ptimese<-themods*thecoefs ##Utilize R's practice of element-wise multiplication of matrices
 
-  exp.val1<-aaply(ptimese, 2, sum, .parallel=parallel,na.rm=TRUE) ##Sum across the rows
+  exp.val1<-aaply(ptimese, 2, sum, .parallel=parallel,na.rm=TRUE) ##Sum across the columns
 
   exp.val<-exp.val1*(g/(g+1)) ##Multiply by g/g+1
   names(exp.val)<-colnames(x)
   
-  coefprob<-aaply(themods, 1, sum, .parallel=parallel)
+  coefprob<-aaply(themods, 2, sum, .parallel=parallel,na.rm=TRUE)
   names(coefprob)<-colnames(x)
   
     ##'index' shows the model numbers for which each covariate has coefficient estimates larger than zero.
-  index <- alply(thecoefs,1,function(x){which(x>0)})
+  index <- alply(thecoefs,2,function(x){which(x>0)})
   
   ##For each covariate, calculate the sum of model probabilities for models in which the coefficient estimate is larger than zero. Divide that by the sum of model probabilities for all models in which the covariate is included.
-  coefprob.largerthanzero <- laply(1:nrow(thecoefs),function(i){sum(themods[i,][index[[i]]])})/as.numeric(aaply(themods,1,sum))
+  coefprob.largerthanzero <- laply(1:ncol(thecoefs),function(i){sum(themods[,i][index[[i]]],na.rm=TRUE)})/as.numeric(aaply(themods,2,sum,na.rm=TRUE))
   
   ##The run.regs2 function takes list 1 from above, which is a list of models and extracts the SEs of 
   ##each coef from this list so that the regressions do not need to be rerun. 
@@ -187,23 +187,16 @@ ses <- llply(1:length(list2),function(i){
 	setNames(list2[[i]],colnames(x)[set[[i]]])
 	}
 	)
-  
-  ##Get the relevant standard errors
-  senamer<-function(i){
-    sevec<-unlist(ses) ##turn list of standard errors into a vector.
-    sename<-which(names(sevec)==colnames(x)[i]) ##Which coefs have a matching name
-    se1<-sevec[sename]
-    return(se1)
-  }
 
-##Apply senamer function over the columns of x
-  theses<-llply(1:ncol(x), senamer, .parallel=parallel) 
-  theses<-unlist(theses)
-  theses<-matrix(theses, nrow=ncol(x), byrow=TRUE)
-  rownames(theses)<-colnames(x)
+ theses <- themods
+ 
+ ##Replace the odds of each model that the covariate is included with the standard error of the respective coefficient estimate.
+  for(i in 1:length(ses)){
+  	theses[i,][which(!is.na(theses[i,]))] <- ses[[i]]
+  }
   
-  ##Square the standard errors of coefficient estimates to get variances, and multiply the variances with model weights. Then sum the resulting matrix by rows to get the expected variance of each covariate. Finally take the square root of expected variances to get the conditional standard deviations.
-  conditional.sd <- sqrt(aaply(theses^2*themods,1,sum))
+  ##Square the standard errors of coefficient estimates to get variances, and multiply the variances with model weights. Then sum the resulting matrix by columns to get the expected variance of each covariate. Finally take the square root of expected variances to get the conditional standard deviations.
+  conditional.sd <- sqrt(aaply(theses^2*themods,2,sum,na.rm=TRUE))
   
   
   return(new("bma", x=x, y=y, thecoefs=thecoefs, combo.coef=coefs,
