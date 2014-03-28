@@ -27,27 +27,18 @@ model.selector<-function(input, either.or=NULL, all.nothing=NULL, one.if.other=N
     theall.nothings<-length(unique(all.nothing %in% named.set[[i]]))==1 ##we want true here
     theeither.ors<-((length(unique(either.or %in% named.set[[i]]))==1)==FALSE | 
                       any(all.nothing %in% named.set[[i]]==FALSE))##good models are true
-    theoneif.others<-((one.if.other %in% good.models[[i]])[1]==TRUE & 
-                      all(one.if.otherset[[i]][2:length(one.if.other)])==FALSE)==FALSE ##good models come out of this mess as TRUE
-    good<-theall.nothings==theeither.ors & all(theall.nothings, theeither.ors)
+    theoneif.others<-((one.if.other %in% named.set[[i]])[1]==TRUE & 
+                      all((one.if.other %in% named.set[[i]])[2:length(one.if.other)])==FALSE)==FALSE 
+                      ##good models come out of this mess^ as TRUE
+    good<-all(theall.nothings, theeither.ors, theoneif.others)
     return(good)   
   }
-
-                        one.if.otherset[[i]][1]==TRUE & 
-                          
-
+  
     ##are the variables in there?
     good.models<-llply(1:length(named.set), thetests ,.parallel=parallel)
 
-good.models
-  named.set[unlist(good.models)]
-  
+    named.set[unlist(good.models)]
 
-    
-    pick.me3<-which(one.in.model==FALSE)
-    
-
-  
   return(good.models3)
 }
 
