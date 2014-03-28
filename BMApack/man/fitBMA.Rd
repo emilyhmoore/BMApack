@@ -2,7 +2,7 @@
 \alias{fitBMA}
 \title{fitBMA Function}
 \usage{
-fitBMA(x, y, g = 3, parallel = TRUE, core = 10, ...)
+fitBMA(x, y, g = 3, parallel = TRUE, core = 100, ...)
 }
 \arguments{
   \item{x:}{A numeric matrix of covariates}

@@ -9,10 +9,10 @@
 #' \item \code{combo.fit} A vector of R-Squared values
 #' \item \code{bmk}
 #' \item \code{exp.vals}
-#' \item \code{exp.ses}
-#' \item \code{the coefs}
+#' \item \code{thecoefs}
 #' \item \code{coefprobs}
 #' \item \code{coefprobs.largerthanzero}
+#' \item \code{conditional.sds}
 #' \item \code{x} A matrix input of covariates
 #' \item \code{y} The dependent variable input (vector) 
 #' }
@@ -25,10 +25,10 @@ setClass(Class="bma",
            combo.fit="numeric",
            bmk="numeric",
            exp.vals="numeric",
-           exp.ses="numeric",
            thecoefs="matrix",
            coefprobs="numeric",
            coefprobs.largerthanzero="numeric",
+           conditional.sds="numeric",
            x="matrix",
            y="numeric"
          ),
@@ -37,10 +37,10 @@ setClass(Class="bma",
            combo.fit=numeric(),
            bmk=numeric(),
            exp.vals=numeric(),
-           exp.ses=numeric(),
            thecoefs=matrix(),
            coefprobs=numeric(),
            coefprobs.largerthanzero=numeric(),
+           conditional.sds=numeric(),
            x = matrix(),
            y = numeric()
          )

@@ -179,45 +179,42 @@ setMethod(f="fitBMA",
   ##For each covariate, calculate the sum of model probabilities for models in which the coefficient estimate is larger than zero. Divide that by the sum of model probabilities for all models in which the covariate is included.
   coefprob.largerthanzero <- laply(1:nrow(thecoefs),function(i){sum(themods[i,][index[[i]]])})/as.numeric(aaply(themods,1,sum))
   
-  ##The run.regs2 function performs a similar task as run.regs, except it is used 
-  ##to extract standard errors instead of coefficients.
-  run.regs2 <- function(i, .parallel=parallel){
-    list2 <- list(NULL)
-    list2 <- list(summary(lm(scale(y)~-1+scale(x[,set[[i]]])))$coefficients[,2])
-    return(list2)
+  ##The run.regs2 function takes list 1 from above, which is a list of models and extracts the SEs of 
+  ##each coef from this list so that the regressions do not need to be rerun. 
+  run.regs2 <- function(i, .parallel=parallel){
+    list2<-summary(list1[[i]])$coefficients[,2]
+    return(list2)
+  }
+
+##Use the run.regs2 function to get the standard errors of the coefficient estimates in each model.
+  list2<-llply(1:length(set), run.regs2, .parallel=parallel)
+
+##Rename the elements of list2 so it can be clearly identified which covariate the standard error refers to.
+ses <- llply(1:length(list2),function(i){
+	setNames(list2[[i]],colnames(x)[set[[i]]])
+	}
+	)
+  
+  ##Get the relevant standard errors
+  senamer<-function(i){
+    sevec<-unlist(ses) ##turn list of standard errors into a vector.
+    sename<-which(names(sevec)==colnames(x)[i]) ##Which coefs have a matching name
+    se1<-sevec[sename]
+    return(se1)
   }
+
+##Apply senamer function over the columns of x
+  theses<-llply(1:ncol(x), senamer, .parallel=parallel) 
+  theses<-unlist(theses)
+  theses<-matrix(theses, nrow=ncol(x), byrow=TRUE)
+  rownames(theses)<-colnames(x)
   
-  list2<-llply(1:length(set), run.regs2, .parallel=parallel)
+  ##Square the standard errors of coefficient estimates to get variances, and multiply the variances with model weights. Then sum the resulting matrix by rows to get the expected variance of each covariate. Finally take the square root of expected variances to get the conditional standard deviations.
+  conditional.sd <- sqrt(aaply(theses^2*themods,1,sum))
   
-  list2 <- unlist(list2, recursive=F)
   
-  
-  ##SE.fun will later be used to extract the standard erros from the analysis. 
-  ##This function also uses the setNames function in order to identify the 
-  ##variable for each standard error.
-  SE.fun <- function(i, .parallel=paralell){
-    SEs <- list()
-    SEs <- setNames(list2[[i]], colnames(x)[set[[i]]])
-    return(SEs)
-  }
-  SEs <-llply(1:length(set), SE.fun, .parallel=parallel)
-  
-  ##The below code creates a matrix of standard errors from the various models,
-  ##and then performs matrix multiplication using the model odds, odds.bmk,
-  ##after which the weighted standard errors are stored as PosteriorSE,
-  ##for the slot exp.ses (expected standard errors).
-  SEmatrix <- matrix(0, ncol=length(SEs), nrow=ncol(x))
-  rownames(SEmatrix) <- paste("x", 1:ncol(x), sep="")
-  matnames <- rownames(SEmatrix)
-  SEmatrix <- maply(1:length(SEs),function(x){SEs[[x]][matnames]})
-  SEmatrix <- t(as.matrix(SEmatrix))
-  SEmatrix[is.na(SEmatrix)] <- 0
-  PosteriorSE <- SEmatrix %*% odds.bmk
-  PosteriorSE <- as.numeric(PosteriorSE)
-  names(PosteriorSE) <- paste("x", 1:ncol(x), sep="")
-  
-  return(new("bma", x=x, y=y, thecoefs=thecoefs, combo.coef=coefs, exp.ses=PosteriorSE,
-             combo.fit=fits,bmk=odds.bmk, exp.vals=exp.val, coefprobs=coefprob, coefprobs.largerthanzero=coefprob.largerthanzero))
+  return(new("bma", x=x, y=y, thecoefs=thecoefs, combo.coef=coefs,
+             combo.fit=fits,bmk=odds.bmk, exp.vals=exp.val, coefprobs=coefprob, coefprobs.largerthanzero=coefprob.largerthanzero,conditional.sds=conditional.sd))
           }#close function definition
 ) ##Close method
 

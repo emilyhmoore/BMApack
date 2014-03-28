@@ -22,7 +22,7 @@ setMethod(f="plot", signature="bma",
             devAskNewPage(TRUE)
             probs <- 1-x@coefprobs
             coef.plot <- function(i){
-              plot(density(rnorm(n=nrow(x@x), mean=x@exp.vals[i], sd=x@exp.ses[i])), 
+              plot(density(rnorm(n=nrow(x@x), mean=x@exp.vals[i], sd=x@conditional.sds[i])), 
                    main=paste("Variable", i), xlab="", ylab="")
               segments(0,0,0,probs[i], lwd=3)
             }

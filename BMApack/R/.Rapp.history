@@ -182,3 +182,4 @@ load_all(current.code)
 library(devtools)
 library(roxygen2)
 current.code <- as.package("BMAPack")
+?density
