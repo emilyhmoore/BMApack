@@ -20,11 +20,16 @@
 setMethod(f="plot", signature="bma",
           definition=function(x,y,...){
             devAskNewPage(TRUE)
-            probs <- 1-x@coefprobs
+            exclusion.fun <- function(i){
+              exclusion <- numeric()
+              exclusion <- sum(is.na(x@theses[,i]))/length(x@theses[,i])
+              return(exclusion)
+            }
+            exclusion <- aaply(1:ncol(x@theses), .margins=1, .fun=exclusion.fun)
             coef.plot <- function(i){
               plot(density(rnorm(n=nrow(x@x), mean=x@exp.vals[i], sd=x@conditional.sds[i])), 
                    main=paste("Variable", i), xlab="", ylab="")
-              segments(0,0,0,probs[i], lwd=3)
+              segments(0,0,0,exclusion[i], lwd=3)
             }
             l_ply(1:length(x@exp.vals), coef.plot)
           })
