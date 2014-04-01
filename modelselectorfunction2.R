@@ -1,4 +1,4 @@
-char.vec<-paste("var", 1:15)
+char.vec<-paste("var", 1:5)
 input<-char.vec
 ##either.or variables are those in which one is included or the other but never both
 ##all.nothing variables are those in which a set should always be included or never included 
@@ -25,12 +25,14 @@ model.selector<-function(input, either.or=NULL, all.nothing=NULL, one.if.other=N
     }else{ 
       thetests<-function(i){
         if(is.null(all.nothing)==TRUE){theall.nothings<-rep(TRUE, length(named.set))} else{
-          theall.nothings<-length(unique(all.nothing %in% named.set[[i]]))==1} ##we want true here
-        
+          theall.nothings<-length(unique(all.nothing %in% named.set[[i]]))==1
+          }##we want true here
+
         if(is.null(either.or)==TRUE){theeither.ors<-rep(TRUE, length(named.set))} else{
           theeither.ors<-((length(unique(either.or %in% named.set[[i]]))==1)==FALSE | 
-                            any(all.nothing %in% named.set[[i]]==FALSE))}##good models are true
-        
+                            any(either.or %in% named.set[[i]]==FALSE))
+          }##good models are true
+
         if(is.null(one.if.other)==TRUE){theoneif.others<-rep(TRUE, length(named.set))} else{
           theoneif.others<-((one.if.other %in% named.set[[i]])[1]==TRUE & 
                               all((one.if.other %in% named.set[[i]])[2:length(one.if.other)])==FALSE)==FALSE} 
@@ -50,13 +52,13 @@ model.selector<-function(input, either.or=NULL, all.nothing=NULL, one.if.other=N
 } ##closing the function
 
  ##Fast if all NULLs or all present is specified but slow if there are NULLs otherwise. 
-system.time(trial<-model.selector(char.vec, 
-                                  either.or=NULL, 
-                                  all.nothing=NULL,
-                                  one.if.other=NULL
-))
-head(trial)
-tail(trial)
+trial<-model.selector(char.vec, 
+                      either.or=c("var 1", "var 2"), 
+                      all.nothing=c("var 3", "var 4"),
+                      one.if.other=NULL)
+trial
+
+powerset(1:5)
 
 ##With this specification, it takes 31 models and trims it down to 9 models. 
 ##With ten variables, it takes 1023 models and trims it down to 319. 
