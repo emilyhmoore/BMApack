@@ -845,7 +845,6 @@ summar(fitBMA(x,y))
 summary(fitBMA(x,y))
 plot(x,y)
 plot(fitBMA(x,y))
-plot(fitBMA(x,y))
 char.vec<-paste("var", 1:15)
 char.vec
 input <- char.vec[c(1,2)]
