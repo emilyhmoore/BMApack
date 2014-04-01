@@ -41,6 +41,8 @@ setMethod(f="plot", signature="bma",
             }
             seslist <- aaply(1:ncol(BMAtheses), .margins=1, .fun=seslist.fun)
             
+            modelodds <- x@bmk
+            
             cbind.fun <- function(i){
               cbindmat <- list(NULL)
               cbindmat <- cbind(coefslist[[i]], seslist[[i]], modelodds)
