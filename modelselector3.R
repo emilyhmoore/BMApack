@@ -1,12 +1,11 @@
 ##creating a set of character vectors and conditionals to work with
 char<-paste("var", 1:20)
 
-char<-c(letters[1:15])
+char<-c(letters[1:7])
 
 modselect<-function(x=char, all.nothing=c("a", "b", "c"), either.or=c("d", "e"),
                     always=c("f", "g"))
   {
-
 
 ##This is so we can gather all the variables on which there are conditions together
 conditionals<-c(all.nothing, either.or, always)
@@ -76,8 +75,18 @@ newmatrix[,either.or[2]]<-models[,"either.orcond"]==either.or[2]
 return(newmatrix)
 }
 
-(modselect(always=NULL))
+modselect(either.or=NULL)
 
 head(models)
 tail(newmatrix)
+
+###Important Notes:
+##Model seems to work fine whether always and either.or are specified or not. 
+##Model DOES NOT work if all.nothing is not specified. Not exactly sure why this is. 
+
+## Pseudocode ideas for the one if other type variables
+##depcond<-"all", "other", "neither"
+##if(depcond=="all"){all variables are true}
+##if(depcond=="other"){just the "other" variable(s) are true, dependent variable is false}
+##if(depcond=="neither"){Neither of the variables are included}
 
