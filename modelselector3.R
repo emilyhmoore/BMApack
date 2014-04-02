@@ -1,8 +1,12 @@
 ##creating a set of character vectors and conditionals to work with
-char<-paste("var", 1:10)
-all.nothing<-c("var 1", "var 2")
-either.or<-c("var 3", "var 4")
-always<-"var 5"
+char<-paste("var", 1:20)
+
+char<-c(letters[1:15])
+
+modselect<-function(x=char, all.nothing=c("a", "b", "c"), either.or=c("d", "e"),
+                    always=c("f", "g"))
+  {
+
 
 ##This is so we can gather all the variables on which there are conditions together
 conditionals<-c(all.nothing, either.or, always)
@@ -69,7 +73,11 @@ newmatrix[,all.nothing]<-models[,"all.nothingcond"]
 newmatrix[,either.or[1]]<-models[,"either.orcond"]==either.or[1]
 newmatrix[,either.or[2]]<-models[,"either.orcond"]==either.or[2]
 
+return(newmatrix)
+}
+
+(modselect(always=NULL))
 
 head(models)
-head(newmatrix)
+tail(newmatrix)
 
