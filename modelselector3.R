@@ -1,10 +1,10 @@
 ##creating a set of character vectors and conditionals to work with
 char<-paste("var", 1:20)
 
-char<-c(letters[1:7])
+char<-c(letters[1:10])
 
 modselect<-function(x=char, all.nothing=c("a", "b", "c"), either.or=c("d", "e"),
-                    always=c("f", "g"))
+                    always=c("f", "g"), one.if.other=c("h", "i", "j"))
   {
 
 ##This is so we can gather all the variables on which there are conditions together
@@ -31,7 +31,12 @@ all.nothingcond<-c(TRUE, FALSE)
 ##This is either.or. For now it returns the first var, the second var, or FALSE for neither.
 either.orcond<-c(either.or[1], either.or[2], FALSE)
 
-##This is the list generated for the conditional variables. I will manipulate it in a moment. 
+##Will currently work for interaction terms with one variable as the interaction and the other two as 
+##constituent terms. Could also be made to work for square terms, I think, by have only "both" "neither"
+##and the base term name. 
+one.if.othercond<-c("all", one.if.other[2:length(one.if.other)], "both", "neither")
+
+##This is the list generated for the conditional variables.
 conditionallist<-list(alwayscond=alwayscond, all.nothingcond=all.nothingcond, either.orcond=either.orcond) 
 
 ##Merge the conditional list and the unconditional list
@@ -85,8 +90,8 @@ tail(newmatrix)
 ##Model DOES NOT work if all.nothing is not specified. Not exactly sure why this is. 
 
 ## Pseudocode ideas for the one if other type variables
-##depcond<-"all", "other", "neither"
+##depcond<-"all", "other 1","other 2", "neither"
 ##if(depcond=="all"){all variables are true}
-##if(depcond=="other"){just the "other" variable(s) are true, dependent variable is false}
+##if(depcond=="other"){just the "other" variable(s) are true, dependent (on others) variable is false}
 ##if(depcond=="neither"){Neither of the variables are included}
 
