@@ -19,9 +19,24 @@ length(truefalse.list)<-length(therest)
 truefalse.list<-llply(1:length(therest), function(i){truefalse.list[i]<-c(TRUE, FALSE)})
 names(truefalse.list)<-therest
 
-##This produces the model combinations for the unconditioned variables. 
-modelcomb.unconditional<-expand.grid(truefalse.list)
+##This is the always condition. It means this variables always has to be in.
+alwayscond<-TRUE
 
-rep("seq1", length(therest))
+##This is the all, nothing condition. It's one variable acting for two. 
+all.nothingcond<-c(TRUE, FALSE)
+
+##This is either.or. For now it returns the first var, the second var, or FALSE for neither.
+either.orcond<-c(either.or[1], either.or[2], FALSE)
+
+##This is the list generated for the conditional variables. I will manipulate it in a moment. 
+conditionallist<-list(alwayscond=alwayscond, all.nothingcond=all.nothingcond, either.orcond=either.orcond) 
+
+##Merge the conditional list and the unconditional list
+thirdlist<-c(conditionallist, truefalse.list)
+
+##This is the different possible model specifications that can be included.
+##NOTE: I didn't end up making two separate matrices of conditional and unconditional because this actually
+##seemed to work just fine, and I think it will be shorter in the long run.
+
 
 
