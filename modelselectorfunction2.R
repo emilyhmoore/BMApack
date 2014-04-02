@@ -66,8 +66,14 @@ powerset(1:5)
 ##With 15 variables, it takes 32767 and trims it down to 10239, takes 
 ##about 3 seconds on my memory poor computer for 15 if ALL have some specification. 
 ##if there are NULLs, it's actually really slow, though. 
-seq1<-c(0,1)
-seq2<-1
+seq1<-c(TRUE, FALSE)
+seq2<-TRUE
 
-mat<-expand.grid(seq1, seq1, seq1, seq1,seq2)
+mat<-expand.grid(all.nothing=seq1, var3=seq1, var4=seq1, always=seq2)
 mat
+
+all.nothing<-c("var 1", "var 2")
+
+
+
+
