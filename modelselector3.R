@@ -3,7 +3,7 @@ char<-paste("var", 1:20)
 
 char<-c(letters[1:10])
 
-modselect<-function(x=char, all.nothing=c("a", "b", "c"), either.or=c("d", "e"),
+modselect<-function(x=char, parallel=FALSE, all.nothing=c("a", "b", "c"), either.or=c("d", "e"),
                     always=c("f", "g")
                     #,one.if.other=c("h", "i", "j")
                     )
@@ -11,21 +11,21 @@ modselect<-function(x=char, all.nothing=c("a", "b", "c"), either.or=c("d", "e"),
   
   if(length(all.nothing)==1){stop("If specifying All.nothing, it must have at least two variables")}
   if(length(either.or)==1){stop("If specifying Either.or, it must have at least two variables")}
-  if(length(one.if.other)==1){stop("If specifying one.if.other, it must have at least two variables")}
-  
-##This is so we can gather all the variables on which there are conditions together
-conditionals<-c(all.nothing, either.or, always
+  #if(length(one.if.other)==1){stop("If specifying one.if.other, it must have at least two variables")}
+
+  ##This is so we can gather all the variables on which there are conditions together
+  conditionals<-c(all.nothing, either.or, always
                 #,one.if.other
                 )
 
-##Which variables are the conditionals? It figures this out because we want to be able to 
-##generically separate all of the conditional type variables from the unconditional type variables.
-theconditionals<-which(char==conditionals)
-therest<-char[-theconditionals]
+  ##Which variables are the conditionals? It figures this out because we want to be able to 
+  ##generically separate all of the conditional type variables from the unconditional type variables.
+  theconditionals<-which(char==conditionals)
+  therest<-char[-theconditionals]
 
-##This is a list that will be used for the "unconditioned" variables and put into expand grid
-##It generates a list that says "true false" for each unconditioned variable. 
-##I did it this way separately for each type and then merged it because that made more sense in my head
+  ##This is a list that will be used for the "unconditioned" variables and put into expand grid
+  ##It generates a list that says "true false" for each unconditioned variable. 
+  ##I did it this way separately for each type and then merged it because that made more sense in my head
 ##since later we differentiate between conditioned and unconditioned variables.
 truefalse.list<-list()
 length(truefalse.list)<-length(therest)
@@ -39,7 +39,7 @@ alwayscond<-TRUE
 all.nothingcond<-c(TRUE, FALSE)
 
 ##This is either.or. For now it returns the first var, the second var, or FALSE for neither.
-either.orcond<-c(either.or[1], either.or[2], FALSE)
+either.orcond<-c(either.or, FALSE)
 
 ##currently written for interaction terms with one variable as the interaction and the other two as 
 ##constituent terms. Could also be made to work for square terms, I think, by having only "both" "neither"
@@ -79,15 +79,16 @@ newmatrix[,always]<-models[,"alwayscond"]
 ##in all.nothing
 newmatrix[,all.nothing]<-models[,"all.nothingcond"]
 
-##This code basically puts var 3 as TRUE when the models object says "var 3", it returns
-##FALSE for the corresponding Var 4 and vice versa. If the previous model object said FALSe
+##This code basically puts the first variable as TRUE when the models object says to use that 
+##variable's name, and it returns FALSE for the other variables. If the previous model object said FALSe
 ##indicating Neither should be included, then both will be FALSE in the full spec.
-##The idea is to use the newmatrix to index for the model building in the fitBMA function.
-##As of now, it will only work if the user specifies two either.or variables, but I think it should be
-##able to generalize fairly easily. 
+##The idea is to use the newmatrix to index for the model building in the fitBMA function. 
 
-newmatrix[,either.or[1]]<-models[,"either.orcond"]==either.or[1]
-newmatrix[,either.or[2]]<-models[,"either.orcond"]==either.or[2]
+##had to make this a for () loop. Couldn't get the llply to work on it for some strange reason.
+for (i in 1:length(either.or)){newmatrix[,either.or[i]]<-models[,"either.orcond"]==either.or[i]}
+
+#newmatrix[,either.or[1]]<-models[,"either.orcond"]==either.or[1]
+#newmatrix[,either.or[2]]<-models[,"either.orcond"]==either.or[2]
 
 return(newmatrix)
 }
