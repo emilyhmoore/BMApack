@@ -4,11 +4,19 @@ char<-paste("var", 1:20)
 char<-c(letters[1:10])
 
 modselect<-function(x=char, all.nothing=c("a", "b", "c"), either.or=c("d", "e"),
-                    always=c("f", "g"), one.if.other=c("h", "i", "j"))
+                    always=c("f", "g")
+                    #,one.if.other=c("h", "i", "j")
+                    )
   {
-
+  
+  if(length(all.nothing)==1){stop("If specifying All.nothing, it must have at least two variables")}
+  if(length(either.or)==1){stop("If specifying Either.or, it must have at least two variables")}
+  if(length(one.if.other)==1){stop("If specifying one.if.other, it must have at least two variables")}
+  
 ##This is so we can gather all the variables on which there are conditions together
-conditionals<-c(all.nothing, either.or, always)
+conditionals<-c(all.nothing, either.or, always
+                #,one.if.other
+                )
 
 ##Which variables are the conditionals? It figures this out because we want to be able to 
 ##generically separate all of the conditional type variables from the unconditional type variables.
@@ -17,6 +25,8 @@ therest<-char[-theconditionals]
 
 ##This is a list that will be used for the "unconditioned" variables and put into expand grid
 ##It generates a list that says "true false" for each unconditioned variable. 
+##I did it this way separately for each type and then merged it because that made more sense in my head
+##since later we differentiate between conditioned and unconditioned variables.
 truefalse.list<-list()
 length(truefalse.list)<-length(therest)
 truefalse.list<-llply(1:length(therest), function(i){truefalse.list[i]<-c(TRUE, FALSE)})
@@ -25,19 +35,21 @@ names(truefalse.list)<-therest
 ##This is the always condition. It means this variables always has to be in.
 alwayscond<-TRUE
 
-##This is the all, nothing condition. It's one variable acting for two. 
+##This is the all, nothing condition. It's one variable acting for two or more.
 all.nothingcond<-c(TRUE, FALSE)
 
 ##This is either.or. For now it returns the first var, the second var, or FALSE for neither.
 either.orcond<-c(either.or[1], either.or[2], FALSE)
 
-##Will currently work for interaction terms with one variable as the interaction and the other two as 
-##constituent terms. Could also be made to work for square terms, I think, by have only "both" "neither"
+##currently written for interaction terms with one variable as the interaction and the other two as 
+##constituent terms. Could also be made to work for square terms, I think, by having only "both" "neither"
 ##and the base term name. 
-one.if.othercond<-c("all", one.if.other[2:length(one.if.other)], "both", "neither")
+#one.if.othercond<-c("all", one.if.other[2:length(one.if.other)], "both", "neither")
 
 ##This is the list generated for the conditional variables.
-conditionallist<-list(alwayscond=alwayscond, all.nothingcond=all.nothingcond, either.orcond=either.orcond) 
+conditionallist<-list(alwayscond=alwayscond, all.nothingcond=all.nothingcond, either.orcond=either.orcond
+                      #,one.if.othercond=one.if.othercond
+                      ) 
 
 ##Merge the conditional list and the unconditional list
 thirdlist<-c(conditionallist, truefalse.list)
@@ -47,7 +59,7 @@ thirdlist<-c(conditionallist, truefalse.list)
 ##seemed to work just fine, and I think it will be shorter in the long run.
 
 models<-expand.grid(thirdlist)
-
+models
 ##This is a new matrix that has the number of models in models but has a column for each variable.
 ##It then sets the names of the matrix to match the variable names of interest.
 newmatrix<-matrix(rep(0),ncol=length(char), nrow=nrow(models))
@@ -80,7 +92,10 @@ newmatrix[,either.or[2]]<-models[,"either.orcond"]==either.or[2]
 return(newmatrix)
 }
 
-modselect(either.or=NULL)
+##Note, a, b, and c (the all.nothings always match as they should, d and e are opposite except
+##when both are false as they should be. f and g are always TRUE as they should be. The others vary since
+##I commented out the one.if.other specifications.)
+modselect()
 
 head(models)
 tail(newmatrix)
