@@ -19,14 +19,19 @@
 #' 
 setMethod(f="plot", signature="bma",
           definition=function(x,y,...){
-            devAskNewPage(TRUE)
-            BMAtheses <- x@theses
-            BMAtheses[is.na(BMAtheses)] <- 0
+            devAskNewPage(TRUE) #Setting so that you can scroll through various plots.
             
-            BMAthecoefs <- x@thecoefs
-            BMAthecoefs[is.na(BMAthecoefs)] <- 0
-            BMAthecoefs
+            BMAtheses <- x@theses #Extracting the standard deviations.
             
+            BMAtheses[is.na(BMAtheses)] <- 0 #Setting NAs to 0.
+            
+            BMAthecoefs <- x@thecoefs #Extracting the coefficients.
+            
+            BMAthecoefs[is.na(BMAthecoefs)] <- 0 #Setting NAs to 0.
+
+            #Creating a list of coefficient estimates for all variables accross all models.
+            #Each element in the list represents the coefficient estimates for a particular
+            #variable for each model.
             ceofslist.fun <- function(i){
               coefslist <- list(NULL)
               coefslist <- list(matrix(BMAthecoefs[,i]))
@@ -34,6 +39,9 @@ setMethod(f="plot", signature="bma",
             }
             coefslist <- aaply(1:ncol(BMAthecoefs), .margins=1, .fun=ceofslist.fun)
             
+            #Creating a list of coefficient estimates for all variables across all models.
+            #Each element in the list represents the coefficient estimates for a particular
+            #variable for each model.
             seslist.fun <- function(i){
               seslist <- list(NULL)
               seslist <- list(matrix(BMAtheses[,i]))
@@ -41,24 +49,28 @@ setMethod(f="plot", signature="bma",
             }
             seslist <- aaply(1:ncol(BMAtheses), .margins=1, .fun=seslist.fun)
             
+            #Extracting model odds.
             modelodds <- x@bmk
             
+            #Combining the coefficient estimates, standard deviations, and model odds for each
+            #variable. Each element in the list represents one variable.
             cbind.fun <- function(i){
               cbindmat <- list(NULL)
               cbindmat <- cbind(coefslist[[i]], seslist[[i]], modelodds)
               return(cbindmat)
             }
-            
             totalmat <- llply(1:length(coefslist), .fun=cbind.fun)
             
+            #Omitting those models for which the specific variable is not included.
             zeroelim.fun <- function(i){
               nonzeromat <- list(NULL)
               nonzeromat <- totalmat[[i]][rowSums(totalmat[[i]]==0)==0,]
               return(nonzeromat)
             }
-            
             nonzeromat <- llply (1:length(totalmat), .fun=zeroelim.fun)
             
+            #Running dnorm function across all variables, using appropriate coefficient estimate
+            #and standard deviation.
             dnorm.fun <- function(j){
               dnorm.fun2 <- function(i){
                 dnormmat <- matrix()
@@ -71,26 +83,29 @@ setMethod(f="plot", signature="bma",
               }
               dnormmat <- t(aaply(1:nrow(nonzeromat[[j]]), .fun=dnorm.fun2, .margins=1))
             }
-            
             dnormmat2 <- llply(1:length(nonzeromat), .fun=dnorm.fun)
             
+            #Calculating the height of y at all points in sequence, which will be used to plot
+            #the posterior distributions.
             yheight.fun <- function(i){
               heightmat <- list()
               heightmat <- dnormmat2[[i]] %*% matrix(nonzeromat[[i]][,3])
               return(heightmat)
             }
-            
             heightmat <- llply(1:length(dnormmat2), .fun=yheight.fun)
             
+            #Calculating probability that particular variable is not included in model. Will be 
+            #used for vertical bar centered at zero on graph.
             exclusion.fun <- function(i){
               exclusion <- numeric()
               exclusion <- sum(is.na(x@theses[,i]))/length(x@theses[,i])
               return(exclusion)
             }
-            
             exclusion <- aaply(1:ncol(x@theses), .margins=1, .fun=exclusion.fun)
             
-            
+            #Plotting posterior distributions of variables. Setting the x-axis to span 
+            #4 standard deviations to left and right of coefficient estimate. Adding
+            #vertical bar to indicate probability that variable is not included in model.
             coef.plot <- function(i){
               plot(seq(min(nonzeromat[[i]][,1])-4*max(nonzeromat[[i]][,2]), 
                        
