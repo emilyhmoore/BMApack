@@ -1,11 +1,11 @@
 ##creating a set of character vectors and conditionals to work with
 char<-paste("var", 1:20)
 
-char<-c(letters[1:15])
+char<-c(letters[1:9])
 
-modselect<-function(x=char, parallel=TRUE,core=10,all.nothing=c("a","b","c"), either.or=c("d", "e"),
-                    always=c("f", "g"),
-                    one.if.other=c("h", "i", "j")
+modselect<-function(x=char, parallel=TRUE,core=10,all.nothing=c("a","b"), either.or=c("c", "d"),
+                    always=c("e"),
+                    one.if.other=c("f", "g", "h")
 )
 {
   
@@ -91,41 +91,28 @@ modselect<-function(x=char, parallel=TRUE,core=10,all.nothing=c("a","b","c"), ei
   newmatrix[,all.nothing]<-models[,"all.nothingcond"]
   
     
-  ##This matches the one.if.othercond with the variables used for the interaction term. Will need to 
-  ##then identify in matrix which variables should be labeled as TRUE or FALSE.
-  newmatrix[,one.if.other] <- models[,"one.if.othercond"]
-  
-  
-  ##This code basically puts the first variable as TRUE when the models object says to use that 
-  ##variable's name, and it returns FALSE for the other variables. If the previous model object said FALSe
-  ##indicating Neither should be included, then both will be FALSE in the full spec.
-  ##The idea is to use the newmatrix to index for the model building in the fitBMA function. 
-  
-  ##Using for loop() to specify which variables should be identified as TRUE or FALSE when considering 
-  ##interaction terms. If elements of row corresponding to specific variables all say "both," then var1
-  ##and var2 are marked as TRUE, and var3(interaction term) FALSE. If elements or row all indicate one variable,
-  ##like h or i, then column that corresponds to variable assigned TRUE, while others say FALSE. Also have
-  ##rows that are all TRUE for when both constitutive variables and interaction term are included. Will need to
-  ##see if I can convert the for loop() to a plyr function.
-  for(i in 1:ncol(newmatrix[,one.if.other])){
-    for(j in 1:nrow(newmatrix[i])){
-      if(newmatrix[,one.if.other][j,i] == colnames(newmatrix[,one.if.other][i])){
-        newmatrix[,one.if.other][j,i] <- TRUE
-      }
-      if(newmatrix[,one.if.other][j,i] == "neither"){
-        newmatrix[,one.if.other][j,i] <- FALSE
-      }
-      if(all(newmatrix[,one.if.other][j,] == "both")){
-        newmatrix[,one.if.other][j,][1:2] <- TRUE
-        newmatrix[,one.if.other][j,][3] <- FALSE
-      }
-      if(length(which(newmatrix[,one.if.other][j,] == TRUE)) == 1){
-        index <- which(newmatrix[,one.if.other][j,] != TRUE)
-        newmatrix[,one.if.other][j,index] <- FALSE
-      }
-    }  
+##This for loop assigns TRUE to all variables in one.if.other to represent cases in which all variables are included in the model.
+  for(i in 1:length(one.if.other)){
+  	newmatrix[which(models[,"one.if.othercond"]==TRUE),one.if.other[i]] <- TRUE
+  	
   }
-   
+  
+##This for loop assigns TRUE to each constituent term to represent cases in which a single variable is included in the model.
+  for(i in 1:(length(one.if.other)-1)){
+  	newmatrix[which(models[,"one.if.othercond"]%in%one.if.other[i]),one.if.other[i]] <- TRUE
+  }
+  
+  ##This for loop assigns TRUE to both constituent terms to represent cases in which there is no interaction, but the constituent terms are included in the model.
+  for(i in 1:(length(one.if.other)-1)){
+  	newmatrix[which(models[,"one.if.othercond"]=="both"),one.if.other[i]] <- TRUE
+  }
+  
+  ##This for loop assigns FALSE to all variables in one.if.other to represent cases in which none of the variables are included in the model.
+  for(i in 1:(length(one.if.other)-1)){
+  	newmatrix[which(models[,"one.if.othercond"]=="neither"),one.if.other[i]] <- FALSE
+  }
+  
+
   ##had to make this a for () loop. Couldn't get the llply to work on it for some strange reason.
   for (i in 1:length(either.or)){newmatrix[,either.or[i]]<-models[,"either.orcond"]==either.or[i]}
   
