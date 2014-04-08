@@ -36,16 +36,22 @@ setGeneric(name="fitBMA",
 
 
 setMethod(f="fitBMA",
-          definition=function(x, y, g=3, parallel=TRUE,
-                              core=10){
-  library(plyr)
+          definition=function(x, y, g=3, parallel=TRUE){
   
-  #run only if parallel is TRUE
-  if(parallel==TRUE){
-  library(foreach)
-  library(multicore)
-  library(doMC)
-  registerDoMC(cores=core) ##Will need for later for parallel stuff
+  ##This function runs the regressions for each combination
+  run.regs<-function(i, .parallel=parallel){
+    list1<-list(NULL) ##empty list
+    list1<-list(lm(scale(y)~-1+scale(x[,set[[i]]]))) ##all combinations
+    return(list1)
+  }
+  
+  ##coef.fun will later be used to extract the coefficients from the analysis. 
+  ##This function also uses the setNames function in order to identify the 
+  #variable for each coefficient.
+  coef.fun <- function(i, .parallel=parallel){
+    coefs <- list()
+    coefs <- setNames(coef(list1[[i]]), colnames(x)[set[[i]]])
+    return(coefs)  
   }
   
   ##Error thrown if non-unque column names.
@@ -58,13 +64,6 @@ setMethod(f="fitBMA",
   ##making each combination a single list item
   set<-unlist(set, recursive=F)
 
-  ##This function runs the regressions for each combination
-  run.regs<-function(i, .parallel=parallel){
-    list1<-list(NULL) ##empty list
-    list1<-list(lm(scale(y)~-1+scale(x[,set[[i]]]))) ##all combinations
-    return(list1)
-  }
-
   #Get the list of regression results
   list1<-llply(1:length(set), run.regs, .parallel=parallel)
   ##Get rid of the outermost list, so it's one list per regression
@@ -76,15 +75,6 @@ setMethod(f="fitBMA",
   ##Since lapply makes a list, we unlist to make a vector
   fits<-unlist(fits)
 
-  ##coef.fun will later be used to extract the coefficients from the analysis. 
-  ##This function also uses the setNames function in order to identify the 
-  #variable for each coefficient.
-  coef.fun <- function(i, .parallel=parallel){
-    coefs <- list()
-    coefs <- setNames(coef(list1[[i]]), colnames(x)[set[[i]]])
-    return(coefs)  
-  }
-  
   #Extracts the coefficients.
   coefs<-llply(1:length(set), coef.fun, .parallel=parallel)   
 
