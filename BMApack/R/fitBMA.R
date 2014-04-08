@@ -37,6 +37,8 @@ setGeneric(name="fitBMA",
 
 setMethod(f="fitBMA",
           definition=function(x, y, g=3, parallel=TRUE){
+            
+  #####################subfunctions##############################
   
   ##This function runs the regressions for each combination
   run.regs<-function(i, .parallel=parallel){
@@ -53,6 +55,37 @@ setMethod(f="fitBMA",
     coefs <- setNames(coef(list1[[i]]), colnames(x)[set[[i]]])
     return(coefs)  
   }
+ 
+  ##pks.fun will later be used in llply function to create vector pks that stores
+  ##length of every element of list "set."
+  pks.fun <- function(i, .parallel=parallel){ 
+    pks <- list()
+    pks <- length(set[[i]])
+    return(pks)
+  }
+  
+  ##function is intended to be used to aaply over the rows of the matrix above
+  bmk<-function(x){
+    bmk<-((1+x[1])^((x[2]-x[3])/2))*((1+x[1]*(1-x[4]))^(-(x[2]-1)/2))
+    names(bmk)<-c("bmk.val")
+    return(bmk)
+  }
+  
+  ##odds.fun will later be used to calculate odds for bmk.
+  odds.fun <- function(i, .parallel=parallel){ 
+    odds.bmk <- list()
+    odds.bmk <- bmk.vec[i]/sum.bmk
+    return(odds.bmk)
+  }
+  
+  ##The run.regs2 function takes list 1 from above, which is a list of models and extracts the SEs of 
+  ##each coef from this list so that the regressions do not need to be rerun. 
+  run.regs2 <- function(i, .parallel=parallel){
+    list2<-summary(list1[[i]])$coefficients[,2]
+    return(list2)
+  }
+  
+  ###################End subfunction definitions##################################
   
   ##Error thrown if non-unque column names.
   if(length(unique(colnames(x)))<ncol(x)){stop("Must have unique names for each column")}
@@ -66,6 +99,7 @@ setMethod(f="fitBMA",
 
   #Get the list of regression results
   list1<-llply(1:length(set), run.regs, .parallel=parallel)
+  
   ##Get rid of the outermost list, so it's one list per regression
   list1<-unlist(list1, recursive=F)
   
@@ -82,26 +116,12 @@ setMethod(f="fitBMA",
   gs<-rep(g, length(set)) ##make a vector of the g value
   ns<-rep(length(y), length(set)) ##make a vector of the n value
   
-  ##pks.fun will later be used in llply function to create vector pks that stores
-  ##length of every element of list "set."
-  pks.fun <- function(i, .parallel=parallel){ 
-    pks <- list()
-    pks <- length(set[[i]])
-    return(pks)
-  }
   pks <- llply(1:length(set), pks.fun, .parallel=parallel) ##running llply over "set."
   pks <- unlist(pks) ##unlisting pks
   pks <- as.numeric(pks) ##assigning numeric class to pks
   r2s<-fits##r2 values
   
   values<-cbind(gs, ns, pks, r2s)##make matrix of these
-  
-  ##function is intended to be used to aaply over the rows of the matrix above
-  bmk<-function(x){
-    bmk<-((1+x[1])^((x[2]-x[3])/2))*((1+x[1]*(1-x[4]))^(-(x[2]-1)/2))
-    names(bmk)<-c("bmk.val")
-    return(bmk)
-  }
   
   ##vector of bmk values for each model
   bmk.vec<-aaply(.data=values,.margins=1,.fun=bmk, .parallel=parallel)
@@ -110,12 +130,6 @@ setMethod(f="fitBMA",
   sum.bmk<-sum(bmk.vec)
   
   ##Fill in odds for bmk
-  ##odds.fun will later be used to calculate odds for bmk.
-  odds.fun <- function(i, .parallel=parallel){ 
-    odds.bmk <- list()
-    odds.bmk <- bmk.vec[i]/sum.bmk
-    return(odds.bmk)
-  }
   odds.bmk <- llply(1:length(bmk.vec), odds.fun, .parallel=parallel) ##calculating odds, and storing as odds.bmk
   odds.bmk <- unlist(odds.bmk) ##unlisting odds.bmk
   odds.bmk <- as.numeric(odds.bmk) ##assigning class numeric to odds.bmk
@@ -162,15 +176,9 @@ thecoefs <- 	setNames(as.matrix(do.call(rbind,mod),stringsAsFactors=FALSE),nm=co
   ##For each covariate, calculate the sum of model probabilities for models in which the coefficient estimate is larger than zero. Divide that by the sum of model probabilities for all models in which the covariate is included.
   coefprob.largerthanzero <- laply(1:ncol(thecoefs),function(i){sum(themods[,i][index[[i]]],na.rm=TRUE)})/as.numeric(aaply(themods,2,sum,na.rm=TRUE))
   
-  ##The run.regs2 function takes list 1 from above, which is a list of models and extracts the SEs of 
-  ##each coef from this list so that the regressions do not need to be rerun. 
-  run.regs2 <- function(i, .parallel=parallel){
-    list2<-summary(list1[[i]])$coefficients[,2]
-    return(list2)
-  }
 
 ##Use the run.regs2 function to get the standard errors of the coefficient estimates in each model.
-  list2<-llply(1:length(set), run.regs2, .parallel=parallel)
+list2<-llply(1:length(set), run.regs2, .parallel=parallel)
 
 ##Rename the elements of list2 so it can be clearly identified which covariate the standard error refers to.
 ses <- llply(1:length(list2),function(i){
