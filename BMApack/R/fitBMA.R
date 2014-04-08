@@ -30,7 +30,7 @@
 #y<-3*x[,1]+2*x[,2]+rnorm(500)
 
 setGeneric(name="fitBMA",
-           def=function(x, y, g=3, parallel=TRUE,core=100,...)
+           def=function(x, y, g=3, parallel=TRUE, ...)
            {standardGeneric("fitBMA")}
 )
 
