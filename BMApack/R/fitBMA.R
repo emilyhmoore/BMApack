@@ -27,7 +27,7 @@
 setGeneric(name="fitBMA",
            def=function(x, y, g=3, parallel=TRUE, ...)
            {standardGeneric("fitBMA")}
-           )
+           ) 
 
 setMethod(f="fitBMA",
 
