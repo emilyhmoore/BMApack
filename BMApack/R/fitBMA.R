@@ -47,21 +47,21 @@ setMethod(f="fitBMA",
               return(list(coef=thisCoef, se=thisSE, R2=thisR2))
             }
 
-            ##function is intended to be used to aaply over the rows of the matrix above ## and this is not a good comment.
-            ## aplly what over the rows, to achieve what?
-            ## This is not a good name for a function
+            ##the bayesFactor function function calculates the bayes factor 
+            ##It takes an index
             bayesFactor<-function(index){
               bf <- (1+g)^((n-numberVars[index]-1)/2)*((1+g*(1-r2s[index]))^(-(n-1)/2))
               names(bf)<-c("bf")
               return(bf)
             }
                         
-            ##Error thrown if non-unque column names.
+            ##Error thrown if non-unque column names.Each variable must have its own unique name.
             if(length(unique(colnames(x)))<ncol(x)){
               stop("Must have unique names for each column")
             }
             
             ##Make the set of all possible combinations of variables
+            ##Returns a list for now.
             varList <- list()  ## an empty list
             for(i in colnames(x)){
               varList <- c(varList,list(i=c(FALSE,TRUE)))
