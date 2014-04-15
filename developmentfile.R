@@ -8,6 +8,14 @@ current.code <- as.package("BMAPack")
 load_all(current.code)
 document(current.code)
 
+
+ x1<-rnorm(500)
+ x2<-rnorm(500,3,15)
+ dep<-(x1+2*x2)+rnorm(500,4,100)
+ covars<-cbind(x1,x2) 
+jj <- fitBMA(x=covars, y=dep, parallel=FALSE)
+str(jj)
+
 install(pkg=current.code, local=TRUE)
 
 check(current.code)

@@ -1,24 +1,14 @@
-\docType{methods}
-\name{print,bma-method}
-\alias{print,bma-method}
+\name{print}
+\alias{print}
 \title{Print.bma Function}
-\usage{
-\S4method{print}{bma}(x, ...)
-}
-\arguments{
-  \item{x}{an object used to select a method.}
-
-  \item{...}{further arguments passed to or from other
-  methods.}
-}
 \value{
-Prints summaries of coefficients and posterior model odds
-and returns list \item{exp.vals}{A vector of expected
-coefficient values} \item{coefprobs}{A vector of
-probabilities that the coefficient is non-zero}
+  Prints summaries of coefficients and posterior model odds
+  and returns list \item{exp.vals}{A vector of expected
+  coefficient values} \item{coefprobs}{A vector of
+  probabilities that the coefficient is non-zero}
 }
 \description{
-Prints bma objects as returned by fitBMA
+  Prints bma objects as returned by fitBMA
 }
 \examples{
 x1<-rnorm(500)
@@ -29,6 +19,6 @@ trial<-fitBMA(x=covars, y=dep)
 print(trial)
 }
 \author{
-Jacob Montgomery, Emily Moore, Jae Hee Jung, Dino Hadzic
+  Jacob Montgomery, Emily Moore, Jae Hee Jung, Dino Hadzic
 }
 

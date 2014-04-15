@@ -4,6 +4,6 @@
 \alias{BMApack-package}
 \title{BMApack}
 \description{
-BMApack
+  BMApack
 }
 

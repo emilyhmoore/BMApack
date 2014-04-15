@@ -233,11 +233,11 @@ modselect<-function(x=char, parallel=TRUE,core=10,all.nothing=c("a","b"), either
 ##Note, a, b, and c (the all.nothings always match as they should, d and e are opposite except
 ##when both are false as they should be. f and g are always TRUE as they should be. The others vary since
 ##I commented out the one.if.other specifications.)
-modselect()
+#modselect()
 
 
-head(models)
-tail(newmatrix)
+#head(models)
+#tail(newmatrix)
 
 ###Important Notes:
 ##Model seems to work fine whether always and either.or are specified or not. 
