@@ -25,11 +25,12 @@
 #' @export
 
 setGeneric(name="fitBMA",
-           def=function(x, y, g=3, parallel=TRUE,core=100,...)
+           def=function(x, y, g=3, parallel=TRUE, ...)
            {standardGeneric("fitBMA")}
            )
 
 setMethod(f="fitBMA",
+
           definition=function(x, y, g=3, parallel=TRUE)
           {
             
@@ -151,6 +152,7 @@ setMethod(f="fitBMA",
                        coefprobs=coefprob,
                        coefprobs.largerthanzero=coefprob.largerthanzero,
                        conditional.sds=conditional.sd))
+
           }#close function definition
           ) ##Close method
 
