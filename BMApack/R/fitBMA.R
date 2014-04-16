@@ -60,8 +60,8 @@ setMethod(f="fitBMA",
           ##Had to comment out this warning because it's giving me trouble for specifying nothing.
   		    #if(length(interactions) < 2){stop("If specifying interaction, it must have at least two variables")}
   		  
-  		    ##The conditionals object contains variables that are conditioned.
-  		    conditionals<-c(allNothing, eitherOr,always,interactions)
+  		    ##The conditionals object contains variables that are conditioned. For now, I have excluded the interaction condition.
+  		    conditionals<-c(always,allNothing,eitherOr)
   		  
   		    ##conditionalsIndex returns the index of the conditioned variables. This is necessary because we want to separate the conditioned ones from the unconditioned variables.
   		    conditionalsIndex <- which(varNames%in%conditionals)
@@ -78,6 +78,11 @@ setMethod(f="fitBMA",
                                       .parallel=parallel)
             names(unconditionalsList)<-unconditionals
           }
+          
+          	  ##Expand grid on the unconditioned variables.
+          	  unconditionalsMatrix <- expand.grid(unconditionalsList)
+          	  
+          	  unconditionalsMatrix <- as.matrix(unconditionalsMatrix)
 
 		      ##The always condition is always included.
 		      alwaysCondition <- TRUE
@@ -93,20 +98,41 @@ setMethod(f="fitBMA",
           ##interactions object is specified, it means that only that variable is included. 
           ##If "both", both constituent terms are included, but not the interaction term. 
           ##If "neither", none of the variables are included.
-		      interactionsCondition<-c(TRUE, interactions[1:length(interactions)], "both", "neither")
+          ##Commenting out interactions for now.
+		      #interactionsCondition<-c(TRUE, interactions[1:length(interactions)], "both", "neither")
 		  
 		      ##The conditionalsList is all configurations for the conditioned variables combined.
 		      conditionalsList<-list(alwaysCondition=alwaysCondition, 
                                  allNothingCondition=allNothingCondition, 
-                                 eitherOrCondition=eitherOrCondition,
-                                 interactionsCondition=interactionsCondition
+                                 eitherOrCondition=eitherOrCondition
+                               
                                  )
-  
-	        ##Merge conditionalsList and the unconditionalsList.
-          configurationsList<-c(conditionalsList, unconditionalsList)
-
-		      ##Use the expand.grid function to calculate all model configurations.  
-		      modelConfigurations <- expand.grid(configurationsList)
+            
+            ##Expand grid on the conditioned variables.
+            conditionalsModels <- expand.grid(conditionalsList)
+            
+            conditionalsMatrix <-matrix(rep(0),ncol=length(conditionals), nrow=nrow(conditionalsModels))
+		    colnames(conditionalsMatrix)<- conditionals
+		    
+		          ##Put in the configurations for the alwaysCondition variables into conditionalsMatrix.
+		      conditionalsMatrix[,always]<-conditionalsModels[,"alwaysCondition"]
+		  
+		      ##Do the same for the allNothingCondition and eitherOrCondition variables. 
+		      conditionalsMatrix[,allNothing]<-conditionalsModels[,"allNothingCondition"]
+		  
+		      for (i in 1:length(eitherOr)){
+            conditionalsMatrix[,eitherOr[i]]<-conditionalsModels[,"eitherOrCondition"]==eitherOr[i]
+		      }
+		  
+		    ##I would have liked to turn this into a plyr function, but I could not figure it out at the moment. But this part puts the unconditionalsMatrix and the conditionalsMatrix together, creating the object modelConfigurations, which can be used in the run.regs function.
+		    modelConfigurations <- NULL
+		    
+		    for(i in 1:nrow(unconditionalsMatrix)){
+		 temp <- cbind(conditionalsMatrix,matrix(rep(unconditionalsMatrix[i,],nrow(conditionalsMatrix)),ncol=ncol(unconditionalsMatrix),byrow=FALSE,dimnames=list(NULL,unconditionals)))
+		 modelConfigurations <- rbind(modelConfigurations,temp)
+		    }
+		    
+########REVISIONS TO modelSelect FUNCTION ENDS HERE############
 		  
 		      ##modelMatrix is an empty matrix with the independent variables in the columns and 
           ##all model configurations expanded out in the rows. Note that the matrix has an 
@@ -316,10 +342,10 @@ setMethod(f="fitBMA",
           }#close function definition
           ) ##Close method
 
-x=matrix(rnorm(1000), ncol=10)
-colnames(x)<-paste("var", 1:10)
-y<-5*x[,1]+2*x[,2]+rnorm(100)
-fitBMA(x=x,y=y,parallel=FALSE, allNothing=c("var1", "var2"), interaction=NULL)
+#x=matrix(rnorm(1000), ncol=10)
+#colnames(x)<-paste("var", 1:10)
+#y<-5*x[,1]+2*x[,2]+rnorm(100)
+#fitBMA(x=x,y=y,parallel=FALSE, allNothing=c("var1", "var2"), interaction=NULL)
 
 
 
