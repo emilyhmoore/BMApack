@@ -262,7 +262,6 @@ modelMatrix[which(modelMatrix[,interactions[1]]==1),"interaction"]<-TRUE
                        bfVec=bfVec,
                        expB=expB,
                        expBcond=expBcond,
-                       postProb=postProb,
                        largerZero=largerZero,
                        condSE=condSE))
 
