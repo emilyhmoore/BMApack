@@ -21,11 +21,11 @@ setMethod(f="plot", signature="bma",
           definition=function(x,y,...){
             devAskNewPage(TRUE) #Setting so that you can scroll through various plots.
             
-            BMAtheses <- x@theses #Extracting the standard deviations.
+            BMAtheses <- x@standardErrors #Extracting the standard deviations.
             
             BMAtheses[is.na(BMAtheses)] <- 0 #Setting NAs to 0.
             
-            BMAthecoefs <- x@thecoefs #Extracting the coefficients.
+            BMAthecoefs <- x@coefs #Extracting the coefficients.
             
             BMAthecoefs[is.na(BMAthecoefs)] <- 0 #Setting NAs to 0.
 

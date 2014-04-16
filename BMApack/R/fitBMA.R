@@ -255,7 +255,10 @@ modelMatrix[which(modelMatrix[,interactions[1]]==1),"interaction"]<-TRUE
             ##Returned everything basically.
             ##The documentation will need to be changed for the help files.
             ##I think I got them all. Let me know if I missed any. 
-            return(new("bma", x=x, y=y, coefs=coefs,
+            return(new("bma", x=x, 
+                       y=y, 
+                       coefs=coefs,
+                       standardErrors=standardErrors,
                        r2s=r2s,
                        postProb=postProb,
                        postProbcoefs=postProbcoefs,
