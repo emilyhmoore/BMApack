@@ -22,30 +22,33 @@
 #' @export
 setClass(Class="bma",
          representation = representation(
-           combo.coef = "list",
-           combo.fit="numeric",
-           bmk="numeric",
-           exp.vals="numeric",
-           thecoefs="matrix",
-           theses="matrix",
-           coefprobs="numeric",
-           coefprobs.largerthanzero="numeric",
-           conditional.sds="numeric",
-           x="matrix",
-           y="numeric"
+           x="matrix", 
+           y="numeric", 
+           coefs="list",
+           r2s="numeric",
+           postProb="matrix",
+           postProbcoefs="matrix",
+           bfVec="numeric",
+           expB="matrix",
+           expBcond="numeric",
+           postProb="matrix",
+           largerZero="numeric",
+           condSE="numeric"
          ),
          prototype = prototype(
-           combo.coef=list(),
-           combo.fit=numeric(),
-           bmk=numeric(),
-           exp.vals=numeric(),
-           thecoefs=matrix(),
-           theses=matrix(),
-           coefprobs=numeric(),
-           coefprobs.largerthanzero=numeric(),
-           conditional.sds=numeric(),
-           x = matrix(),
-           y = numeric()
+           representation = representation(
+             x=matrix(), 
+             y=numeric(), 
+             coefs=list(),
+             r2s=numeric(),
+             postProb=matrix(),
+             postProbcoefs=matrix(),
+             bfVec=numeric(),
+             expB=matrix(),
+             expBcond=numeric(),
+             postProb=matrix(),
+             largerZero=numeric(),
+             condSE=numeric()
          )
 )
 
@@ -57,22 +60,23 @@ setMethod("initialize", "bma",
           }
 ) 
 
-#' @export
-setMethod("show", "bma",
-          function(object){
-            cat("Regression Fits:", "\n")
-            print(object@combo.fit)
-            cat("\n")
-            cat("Posterior Model Odds:", "\n")
-            print(object@bmk)
-            cat("\n")
-            cat("Posterior Expected Value of Coefficients:", "\n")
-            print(object@exp.vals)
-            cat("\n")
-            cat("Posterior Probability Coefficient is Non-zero:", "\n")
-            print(object@coefprobs)
-          }
-)
+##commented out show for now
+#' #@export
+#setMethod("show", "bma",
+          #function(object){
+           # cat("Regression Fits:", "\n")
+            #print(object@combo.fit)
+            #cat("\n")
+            #cat("Posterior Model Odds:", "\n")
+            #print(object@bmk)
+            #cat("\n")
+            #cat("Posterior Expected Value of Coefficients:", "\n")
+            #print(object@exp.vals)
+            #cat("\n")
+            #cat("Posterior Probability Coefficient is Non-zero:", "\n")
+            #print(object@coefprobs)
+          #}
+#)
 
 
 

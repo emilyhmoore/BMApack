@@ -251,12 +251,18 @@ modelMatrix[which(modelMatrix[,interactions[1]]==1),"interaction"]<-TRUE
               these <- (modelSpaceConst[,i]==TRUE)
               largerZero[i] <- pnorm(0, coefMatrix[these,i], sdMatrix[these,i], lower.tail=FALSE) %*%(postProb[these,])
              }
-
-            ## The returned object needs to be changed arond
+             
+            ##Returned everything basically.
+            ##The documentation will need to be changed for the help files.
+            ##I think I got them all. Let me know if I missed any. 
             return(new("bma", x=x, y=y, coefs=coefs,
                        r2s=r2s,
+                       postProb=postProb,
+                       postProbcoefs=postProbcoefs,
+                       bfVec=bfVec,
+                       expB=expB,
                        expBcond=expBcond,
-                       postProb=postProb
+                       postProb=postProb,
                        largerZero=largerZero,
                        condSE=condSE))
 
