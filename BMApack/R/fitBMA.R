@@ -66,23 +66,6 @@ setMethod(f="fitBMA",
   		    ##conditionalsIndex returns the index of the conditioned variables. This is necessary because we want to separate the conditioned ones from the unconditioned variables.
   		    conditionalsIndex <- which(varNames%in%conditionals)
   		    unconditionals <- varNames[-conditionalsIndex]
-  		  
-  		    ##This is an empty list for the unconditioned variables that will be put into the expand.grid function.
-  		    unconditionalsList<-list()
-  		  
-  		    ##The unconditionalsList will not be created if all variables are conditioned. If there are unconditioned variables, however, the following code generates a list that says TRUE and FALSE for each unconditioned variable.
-  		    if(length(unconditionals)!=0){
-            length(unconditionalsList)<-length(unconditionals)
-            unconditionalsList<-llply(1:length(unconditionals), 
-                                      function(i){unconditionalsList[[i]]<-c(TRUE, FALSE)},
-                                      .parallel=parallel)
-            names(unconditionalsList)<-unconditionals
-          }
-          
-          	  ##Expand grid on the unconditioned variables.
-          	  unconditionalsMatrix <- expand.grid(unconditionalsList)
-          	  
-          	  unconditionalsMatrix <- as.matrix(unconditionalsMatrix)
 
 		      ##The always condition is always included.
 		      alwaysCondition <- TRUE
@@ -100,41 +83,52 @@ setMethod(f="fitBMA",
   		    otherConditionals<-conditionals[-c(which(conditionals%in%always), 
                                              which(conditionals%in%allNothing))]
           
-          ##Make a list for the variables that are just going to be true false
+          ##Make a list for the variables that are just going to be true false before they are 
+          ##stripped away
           otherConditionalsList<-list()
 		      otherConditionalsList<-llply(1:length(otherConditionals),
                                        function(i){otherConditionalsList[[i]]<-c(TRUE, FALSE)},
                                        .parallel=parallel)
 		      names(otherConditionalsList)<-otherConditionals
           
-          <-conditionalsList<-c(conditionalsList, otherConditionalsList)
+          conditionalsList<-c(conditionalsList, otherConditionalsList)
 
           ##Expand grid on the conditioned variables.
           conditionalsModels <- expand.grid(conditionalsList)
-          conditionalsModels  
-          conditionalsMatrix <-matrix(rep(0),ncol=length(conditionals), nrow=nrow(conditionalsModels))
-		      colnames(conditionalsMatrix)<- conditionals
+
+          conditionalsMatrix <-matrix(rep(FALSE),ncol=length(c(allNothing, always)), 
+                                      nrow=nrow(conditionalsModels))
+		      
+          colnames(conditionalsMatrix)<-c(allNothing, always)
 		    
-		          ##Put in the configurations for the alwaysCondition variables into conditionalsMatrix.
+		      ##Put in the configurations for the alwaysCondition variables into conditionalsMatrix.
 		      conditionalsMatrix[,always]<-conditionalsModels[,"alwaysCondition"]
-		  
-		      ##Do the same for the allNothingCondition and eitherOrCondition variables. 
+
+		      ##Do the same for the allNothingCondition.This should look the same 
+          ##for each variable in a set of allNothings 
 		      conditionalsMatrix[,allNothing]<-conditionalsModels[,"allNothingCondition"]
-		  
-		      for (i in 1:length(eitherOr)){
-            conditionalsMatrix[,eitherOr[i]]<-conditionalsModels[,"eitherOrCondition"]==eitherOr[i]
-		      }
-		  
-		    ##I would have liked to turn this into a plyr function, but I could not figure it out at the moment. But this part puts the unconditionalsMatrix and the conditionalsMatrix together, creating the object modelConfigurations, which can be used in the run.regs function.
-		    modelConfigurations <- NULL
+          
+          ##cbind that to the expandgrid results for any of the "otherConditionals" 
+          ##which is just conditionals that are not always or allNothing types.
+          conditionalsMatrix<-cbind(conditionalsMatrix,conditionalsModels[,otherConditionals])
+          
+  		    ##This is an empty list for the unconditioned variables that will be put into the expand.grid function.
+  		    unconditionalsList<-list()
+  		    
+  		    ##The unconditionalsList will not be created if all variables are conditioned. 
+  		    ##If there are unconditioned variables, however, the following code generates a 
+  		    ##list that says TRUE and FALSE for each unconditioned variable.
+  		    if(length(unconditionals)!=0){
+  		      length(unconditionalsList)<-length(unconditionals)
+  		      unconditionalsList<-llply(1:length(unconditionals), 
+  		                                function(i){unconditionalsList[[i]]<-c(TRUE, FALSE)},
+  		                                .parallel=parallel)
+  		      unconditionalsList<-c(unconditionalsList, list(temp=1:length(conditionalsMatrix)))
+  		    }
+  		    
+  		    ##Expand grid on the unconditioned variables.
+  		    unconditionalsMatrix <- expand.grid(unconditionalsList)
 		    
-		    for(i in 1:nrow(unconditionalsMatrix)){
-		      temp <- cbind(conditionalsMatrix,matrix(rep(unconditionalsMatrix[i,],nrow(conditionalsMatrix)),ncol=ncol(unconditionalsMatrix),byrow=FALSE,dimnames=list(NULL,unconditionals)))
-		      modelConfigurations <- rbind(modelConfigurations,temp)
-		    }
-		    
-########REVISIONS TO modelSelect FUNCTION ENDS HERE############
-		  
 		      ##modelMatrix is an empty matrix with the independent variables in the columns and 
           ##all model configurations expanded out in the rows. Note that the matrix has an 
           ##additional column for the newly created interaction term.
