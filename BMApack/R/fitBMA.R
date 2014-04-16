@@ -144,8 +144,9 @@ modelMatrix[which(modelMatrix[,interactions[1]]==1),"interaction"]<-TRUE
               return(list(coef=thisCoef, se=thisSE, R2=thisR2))
             }
 
-            ##the bayesFactor function function calculates the bayes factor 
+            ##the bayesFactor function calculates the bayes factor 
             ##It takes an index
+            ##Will add better comment later.
             bayesFactor<-function(index){
               bf <- (1+g)^((n-numberVars[index]-1)/2)*((1+g*(1-r2s[index]))^(-(n-1)/2))
               names(bf)<-c("bf")
@@ -174,13 +175,13 @@ modelMatrix[which(modelMatrix[,interactions[1]]==1),"interaction"]<-TRUE
             #lmList<-alply(modelSpace,1, run.regs, .parallel=parallel)
 #####JACOB'S CODE THAT CONFIGURES MODEL COMBINATIONS WITHOUT ANY CONDITIONS SPECIFIED ARE COMMENTED OUT ENDING HERE#####
  
-			##Get the modelMatrix from the modelSelect function.
-			modelMatrix <- modelSelect()
+			      ##Get the modelMatrix from the modelSelect function.
+			      modelMatrix <- modelSelect()
 		  
-			##Convert modelMatrix, which is actually a data frame, to a matrix.
-			modelMatrix <- as.matrix(modelMatrix)
+			      ##Convert modelMatrix, which is actually a data frame, to a matrix.
+			      modelMatrix <- as.matrix(modelMatrix)
 			
-			##Get the list of lm objects associated with all possible regressions
+			      ##Get the list of lm objects associated with all possible regressions
             lmList<-alply(modelMatrix,1, run.regs, .parallel=parallel)
             
             ##This gets the r.squared values and puts them in a list
@@ -224,7 +225,7 @@ modelMatrix[which(modelMatrix[,interactions[1]]==1),"interaction"]<-TRUE
 
             ## model space with constant
             modelSpaceConst <- cbind(TRUE, modelSpace)
-           colnames(modelSpaceConst) <- c("(Intercept)", colnames(modelSpace))
+            colnames(modelSpaceConst) <- c("(Intercept)", colnames(modelSpace))
             
             ## E(B)
             expB <- t(coefMatrix)%*%postProb
@@ -252,14 +253,12 @@ modelMatrix[which(modelMatrix[,interactions[1]]==1),"interaction"]<-TRUE
              }
 
             ## The returned object needs to be changed arond
-            return(new("bma", x=x, y=y, thecoefs=thecoefs,
-                       combo.coef=coefs,
-                       theses=theses,
-                       combo.fit=fits,bmk=odds.bmk,
-                       exp.vals=exp.val,
-                       coefprobs=coefprob,
-                       coefprobs.largerthanzero=coefprob.largerthanzero,
-                       conditional.sds=conditional.sd))
+            return(new("bma", x=x, y=y, coefs=coefs,
+                       r2s=r2s,
+                       expBcond=expBcond,
+                       postProb=postProb
+                       largerZero=largerZero,
+                       condSE=condSE))
 
           }#close function definition
           ) ##Close method
