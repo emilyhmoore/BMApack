@@ -25,7 +25,7 @@ setClass(Class="bma",
            x="matrix", 
            y="numeric", 
            coefs="list",
-           standardErrors="list"
+           standardErrors="list",
            r2s="numeric",
            postProbcoefs="matrix",
            bfVec="numeric",
@@ -36,7 +36,6 @@ setClass(Class="bma",
            condSE="numeric"
          ),
          prototype = prototype(
-           representation = representation(
              x=matrix(), 
              y=numeric(), 
              coefs=list(),
