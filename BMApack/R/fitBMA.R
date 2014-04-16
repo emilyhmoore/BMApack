@@ -31,105 +31,124 @@ setGeneric(name="fitBMA",
 
 
 setMethod(f="fitBMA",
-          definition=function(x, y, g=3, parallel=TRUE,allNothing=NULL, eitherOr=NULL,always=NULL,interactions=NULL)
+          definition=function(x, y, g=3, 
+                              parallel=TRUE,
+                              allNothing=NULL, 
+                              eitherOr=NULL,
+                              always=NULL,
+                              interactions=NULL
+                              )
           {
           
           ##Extract the names of the independent variables, which will be used in later functions.
           varNames <- colnames(x)
           
           ##The modelSelect function returns the correct model configurations.  
-          modelSelect<-function(varNames=varNames, parallel=parallel,allNothing=allNothing, eitherOr=eitherOr,always=always,interactions=interactions
-)
-{ 
+          modelSelect<-function(varNames=varNames, 
+                                parallel=parallel,
+                                allNothing=allNothing, 
+                                eitherOr=eitherOr,
+                                always=always,
+                                interactions=interactions
+                                )
+            { 
 	
-		  ##Throw errors if the conditions specified are inappropriate.
-  		  if(length(allNothing)==1){stop("If specifying allNothing, it must have at least two variables")}
-  		  if(length(eitherOr)==1){stop("If specifying eitherOr, it must have at least two variables")}
-  		  if(length(interactions) < 2){stop("If specifying interaction, it must have at least two variables")}
+		      ##Throw errors if the conditions specified are inappropriate.
+  		    #if(length(allNothing)==1){stop("If specifying allNothing, it must have at least two variables")}
+  		    #if(length(eitherOr)==1){stop("If specifying eitherOr, it must have at least two variables")}
+  		    #if(length(interactions) < 2){stop("If specifying interaction, it must have at least two variables")}
   		  
-  		  ##The conditionals object contains variables that are conditioned.
-  		  conditionals<-c(allNothing, eitherOr,always,interactions)
+  		    ##The conditionals object contains variables that are conditioned.
+  		    conditionals<-c(allNothing, eitherOr,always,interactions)
   		  
-  		  ##conditionalsIndex returns the index of the conditioned variables. This is necessary because we want to separate the conditioned ones from the unconditioned variables.
-  		  conditionalsIndex <- which(varNames%in%conditionals)
-  		  unconditionals <- varNames[-conditionalsIndex]
+  		    ##conditionalsIndex returns the index of the conditioned variables. This is necessary because we want to separate the conditioned ones from the unconditioned variables.
+  		    conditionalsIndex <- which(varNames%in%conditionals)
+  		    unconditionals <- varNames[-conditionalsIndex]
   		  
-  		  ##This is an empty list for the unconditioned variables that will be put into the expand.grid function.
-  		  unconditionalsList<-list()
+  		    ##This is an empty list for the unconditioned variables that will be put into the expand.grid function.
+  		    unconditionalsList<-list()
   		  
-  		  ##The unconditionalsList will not be created if all variables are conditioned. If there are unconditioned variables, however, the following code generates a list that says TRUE and FALSE for each unconditioned variable.
-  		  if(length(unconditionals)!=0){
-    length(unconditionalsList)<-length(unconditionals)
-    unconditionalsList<-llply(1:length(unconditionals), function(i){unconditionalsList[[i]]<-c(TRUE, FALSE)},.parallel=parallel)
-    names(unconditionalsList)<-unconditionals
-  }
+  		    ##The unconditionalsList will not be created if all variables are conditioned. If there are unconditioned variables, however, the following code generates a list that says TRUE and FALSE for each unconditioned variable.
+  		    if(length(unconditionals)!=0){
+            length(unconditionalsList)<-length(unconditionals)
+            unconditionalsList<-llply(1:length(unconditionals), function(i){unconditionalsList[[i]]<-c(TRUE, FALSE)},.parallel=parallel)
+            names(unconditionalsList)<-unconditionals
+          }
 
-		  ##The always condition is always included.
-		  alwaysCondition <- TRUE
+		      ##The always condition is always included.
+		      alwaysCondition <- TRUE
 		  
-		  ##The allNothing condition is either included or not included.
-		  allNothingCondition<-c(TRUE, FALSE)
+		      ##The allNothing condition is either included or not included.
+		      allNothingCondition<-c(TRUE, FALSE)
 		  
-		  ##For the eitherOr condition, only one variable is included or none are included. 
-		  eitherOrCondition <- c(eitherOr, FALSE)
+		      ##For the eitherOr condition, only one variable is included or none are included. 
+		      eitherOrCondition <- c(eitherOr, FALSE)
 		  
-		  ##"TRUE" indicates the case when the interaction term is included along with the constituent terms. When either of the variables in the interactions object is specified, it means that only that variable is included. If "both", both constituent terms are included, but not the interaction term. If "neither", none of the variables are included.
-		  interactionsCondition<-c(TRUE, interactions[1:length(interactions)], "both", "neither")
+		      ##"TRUE" indicates the case when the interaction term is included 
+          ##along with the constituent terms. When either of the variables in the 
+          ##interactions object is specified, it means that only that variable is included. 
+          ##If "both", both constituent terms are included, but not the interaction term. 
+          ##If "neither", none of the variables are included.
+		      interactionsCondition<-c(TRUE, interactions[1:length(interactions)], "both", "neither")
 		  
-		  ##The conditionalsList is all configurations for the conditioned variables combined.
-		  conditionalsList<-list(alwaysCondition=alwaysCondition, allNothingCondition=allNothingCondition, eitherOrCondition=eitherOrCondition,interactionsCondition=interactionsCondition
-  )
+		      ##The conditionalsList is all configurations for the conditioned variables combined.
+		      conditionalsList<-list(alwaysCondition=alwaysCondition, 
+                                 allNothingCondition=allNothingCondition, 
+                                 eitherOrCondition=eitherOrCondition,
+                                 interactionsCondition=interactionsCondition
+                                 )
+  
+	        ##Merge conditionalsList and the unconditionalsList.
+          configurationsList<-c(conditionalsList, unconditionalsList)
 
-	      ##Merge conditionalsList and the unconditionalsList.
-  configurationsList<-c(conditionalsList, unconditionalsList)
-
-		  ##Use the expand.grid function to calculate all model configurations.  
-		  modelConfigurations <- expand.grid(configurationsList)
+		      ##Use the expand.grid function to calculate all model configurations.  
+		      modelConfigurations <- expand.grid(configurationsList)
 		  
-		  ##modelMatrix is an empty matrix with the independent variables in the columns and all model configurations expanded out in the rows. Note that the matrix has an additional column for the newly created interaction term.
-		  modelMatrix <-matrix(rep(0),ncol=length(varNames)+1, nrow=nrow(modelConfigurations))
-		  colnames(modelMatrix)<- c(varNames,"interaction")
+		      ##modelMatrix is an empty matrix with the independent variables in the columns and 
+          ##all model configurations expanded out in the rows. Note that the matrix has an 
+          ##additional column for the newly created interaction term.
+		      modelMatrix <-matrix(rep(0),ncol=length(varNames)+1, nrow=nrow(modelConfigurations))
+		      colnames(modelMatrix)<- c(varNames,"interaction")
 		  
-		  ##Convert the matrix into a data frame for compatibility with the expand.grid function.
-		  modelMatrix <- as.data.frame(modelMatrix)
+		      ##Convert the matrix into a data frame for compatibility with the expand.grid function.
+		      modelMatrix <- as.data.frame(modelMatrix)
 		  
-		  ##Put in the configurations for the unconditioned variables (which are indicated by TRUE or FALSE) into modelMatrix.
-		  modelMatrix[,unconditionals]<-modelConfigurations[,unconditionals]
+		      ##Put in the configurations for the unconditioned variables (which are indicated by TRUE or FALSE) into modelMatrix.
+		      modelMatrix[,unconditionals]<-modelConfigurations[,unconditionals]
 		  
-		  ##Put in the configurations for the alwaysCondition variables into modelMatrix.
-		  modelMatrix[,always]<-modelConfigurations[,"alwaysCondition"]
+		      ##Put in the configurations for the alwaysCondition variables into modelMatrix.
+		      modelMatrix[,always]<-modelConfigurations[,"alwaysCondition"]
 		  
-		  ##Do the same for the allNothingCondition and eitherOrCondition variables. 
-		  modelMatrix[,allNothing]<-modelConfigurations[,"allNothingCondition"]
+		      ##Do the same for the allNothingCondition and eitherOrCondition variables. 
+		      modelMatrix[,allNothing]<-modelConfigurations[,"allNothingCondition"]
 		  
-		  for (i in 1:length(eitherOr)){modelMatrix[,eitherOr[i]]<-modelConfigurations[,"eitherOrCondition"]==eitherOr[i]}
+		      for (i in 1:length(eitherOr)){modelMatrix[,eitherOr[i]]<-modelConfigurations[,"eitherOrCondition"]==eitherOr[i]}
 		  
 		  ##This for loop assigns TRUE to all variables in the interactions object to represent cases in which the interaction term and the constituent terms are included.
 		  for(i in 1:length(interactions)){
-  	modelMatrix[which(modelConfigurations[,"interactionsCondition"]==TRUE),interactions[i]] <- TRUE
-  	
-  }
+  	    modelMatrix[which(modelConfigurations[,"interactionsCondition"]==TRUE),interactions[i]] <- TRUE
+      }
 
-		 ##For rows in which the constitutent terms are included, the interaction term should be included as well.
-modelMatrix[which(modelMatrix[,interactions[1]]==1),"interaction"]<-TRUE
+		  ##For rows in which the constitutent terms are included, the interaction term should be included as well.
+      modelMatrix[which(modelMatrix[,interactions[1]]==1),"interaction"]<-TRUE
   
 	 	  ##This for loop assigns TRUE to each constituent term to represent cases in which a single variable is included in the model.
 	 	  for(i in 1:(length(interactions))){
-  	modelMatrix[which(modelConfigurations[,"interactionsCondition"]%in%interactions[i]),interactions[i]] <- TRUE
-  }
+  	    modelMatrix[which(modelConfigurations[,"interactionsCondition"]%in%interactions[i]),interactions[i]] <- TRUE
+      }
   
   		  ##This for loop assigns TRUE to both constituent terms to represent cases in which there is no interaction, but the constituent terms are included in the model.
   		  for(i in 1:(length(interactions))){
-  	modelMatrix[which(modelConfigurations[,"interactionsCondition"]=="both"),interactions[i]] <- TRUE
-  }
+  	      modelMatrix[which(modelConfigurations[,"interactionsCondition"]=="both"),interactions[i]] <- TRUE
+        }
   
   		  ##This for loop assigns FALSE to all variables in the interactions object to represent cases in which none of the variables are included in the model.
   		  for(i in 1:(length(interactions))){
-  	modelMatrix[which(modelConfigurations[,"interactionsCondition"]=="neither"),interactions[i]] <- FALSE
-  }	
+  	      modelMatrix[which(modelConfigurations[,"interactionsCondition"]=="neither"),interactions[i]] <- FALSE
+        }	
   	  
   	      return(modelMatrix)
-}
+    }
 
             ## This function runs the regressions for each combination
             ## i is a list of variable names contained in matrix x
@@ -271,6 +290,10 @@ modelMatrix[which(modelMatrix[,interactions[1]]==1),"interaction"]<-TRUE
           }#close function definition
           ) ##Close method
 
+x=matrix(rnorm(1000), ncol=10)
+colnames(x)<-paste("var", 1:10)
+y<-5*x[,1]+2*x[,2]+rnorm(100)
+fitBMA(x=x,y=y,parallel=FALSE, allNothing=c("var1", "var2"))
 
 
 
