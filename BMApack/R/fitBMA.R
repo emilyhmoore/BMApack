@@ -32,7 +32,7 @@ setGeneric(name="fitBMA",
 
 setMethod(f="fitBMA",
           definition=function(x, y, g=3, 
-                              parallel=TRUE,
+                              parallel=FALSE,
                               allNothing=NULL, 
                               eitherOr=NULL,
                               always=NULL,
@@ -89,30 +89,31 @@ setMethod(f="fitBMA",
 		  
 		      ##The allNothing condition is either included or not included.
 		      allNothingCondition<-c(TRUE, FALSE)
-		  
-		      ##For the eitherOr condition, only one variable is included or none are included. 
-		      eitherOrCondition <- c(eitherOr, FALSE)
-		  
-		      ##"TRUE" indicates the case when the interaction term is included 
-          ##along with the constituent terms. When either of the variables in the 
-          ##interactions object is specified, it means that only that variable is included. 
-          ##If "both", both constituent terms are included, but not the interaction term. 
-          ##If "neither", none of the variables are included.
-          ##Commenting out interactions for now.
-		      #interactionsCondition<-c(TRUE, interactions[1:length(interactions)], "both", "neither")
-		  
+		      ##
+          ##We will need to be able to take lists of allnothings eventually.
+          ##
 		      ##The conditionalsList is all configurations for the conditioned variables combined.
 		      conditionalsList<-list(alwaysCondition=alwaysCondition, 
-                                 allNothingCondition=allNothingCondition, 
-                                 eitherOrCondition=eitherOrCondition
-                               
-                                 )
-            
-            ##Expand grid on the conditioned variables.
-            conditionalsModels <- expand.grid(conditionalsList)
-            
-            conditionalsMatrix <-matrix(rep(0),ncol=length(conditionals), nrow=nrow(conditionalsModels))
-		    colnames(conditionalsMatrix)<- conditionals
+                                 allNothingCondition=allNothingCondition)
+          
+          ##This is all conditionals that are not always or allNothing types
+  		    otherConditionals<-conditionals[-c(which(conditionals%in%always), 
+                                             which(conditionals%in%allNothing))]
+          
+          ##Make a list for the variables that are just going to be true false
+          otherConditionalsList<-list()
+		      otherConditionalsList<-llply(1:length(otherConditionals),
+                                       function(i){otherConditionalsList[[i]]<-c(TRUE, FALSE)},
+                                       .parallel=parallel)
+		      names(otherConditionalsList)<-otherConditionals
+          
+          <-conditionalsList<-c(conditionalsList, otherConditionalsList)
+
+          ##Expand grid on the conditioned variables.
+          conditionalsModels <- expand.grid(conditionalsList)
+          conditionalsModels  
+          conditionalsMatrix <-matrix(rep(0),ncol=length(conditionals), nrow=nrow(conditionalsModels))
+		      colnames(conditionalsMatrix)<- conditionals
 		    
 		          ##Put in the configurations for the alwaysCondition variables into conditionalsMatrix.
 		      conditionalsMatrix[,always]<-conditionalsModels[,"alwaysCondition"]
@@ -128,8 +129,8 @@ setMethod(f="fitBMA",
 		    modelConfigurations <- NULL
 		    
 		    for(i in 1:nrow(unconditionalsMatrix)){
-		 temp <- cbind(conditionalsMatrix,matrix(rep(unconditionalsMatrix[i,],nrow(conditionalsMatrix)),ncol=ncol(unconditionalsMatrix),byrow=FALSE,dimnames=list(NULL,unconditionals)))
-		 modelConfigurations <- rbind(modelConfigurations,temp)
+		      temp <- cbind(conditionalsMatrix,matrix(rep(unconditionalsMatrix[i,],nrow(conditionalsMatrix)),ncol=ncol(unconditionalsMatrix),byrow=FALSE,dimnames=list(NULL,unconditionals)))
+		      modelConfigurations <- rbind(modelConfigurations,temp)
 		    }
 		    
 ########REVISIONS TO modelSelect FUNCTION ENDS HERE############
@@ -189,13 +190,13 @@ setMethod(f="fitBMA",
         }##close modelSelect function
         
         ##Trying to get modelSelect to work.
-        #modelSelect(varNames=varNames,
-                    #allNothing=c("var 1", "var 2"), 
-                    #eitherOr=c("var 3", "var 4"), 
-                    #always="var 5", 
-                    #interactions=c("var 6", "var 7"),
-                    #parallel=FALSE
-                    #)
+        modelSelect(varNames=varNames,
+                    allNothing=c("var 1", "var 2"), 
+                    eitherOr=c("var 3", "var 4"), 
+                    always="var 5", 
+                    interactions=c("var 6", "var 7"),
+                    parallel=FALSE
+                    )
 
             ## This function runs the regressions for each combination
             ## i is a list of variable names contained in matrix x
@@ -253,7 +254,7 @@ setMethod(f="fitBMA",
 			      modelMatrix <- as.matrix(modelMatrix)
 			
 			      ##Get the list of lm objects associated with all possible regressions
-            lmList<-alply(modelMatrix,1, run.regs, .parallel=parallel)
+            lmList<-alply(1:nrow(modelMatrix),run.regs, .parallel=parallel)
             
             ##This gets the r.squared values and puts them in a list
             r2s<-laply(lmList, function(x){return(x[["R2"]])}, .parallel=parallel)
@@ -348,4 +349,7 @@ setMethod(f="fitBMA",
 #fitBMA(x=x,y=y,parallel=FALSE, allNothing=c("var1", "var2"), interaction=NULL)
 
 
-
+allNothing=c("var 1", "var 2")
+always=c("var 3", "var 4", "var 5")
+eitherOr=c("var 6", "var 7")
+interactions=NULL
