@@ -111,6 +111,12 @@ setMethod(f="fitBMA",
           ##cbind that to the expandgrid results for any of the "otherConditionals" 
           ##which is just conditionals that are not always or allNothing types.
           conditionalsMatrix<-cbind(conditionalsMatrix,conditionalsModels[,otherConditionals])
+         
+          ###############################################################################
+          ###############This is where we need to strip out "bad" models#################
+          ###############BEFORE the temp variable is created for use with################
+          ###############the unconditionals##############################################
+          ###############################################################################
           
   		    ##This is an empty list for the unconditioned variables that will be put into the expand.grid function.
   		    unconditionalsList<-list()
@@ -123,64 +129,32 @@ setMethod(f="fitBMA",
   		      unconditionalsList<-llply(1:length(unconditionals), 
   		                                function(i){unconditionalsList[[i]]<-c(TRUE, FALSE)},
   		                                .parallel=parallel)
-  		      unconditionalsList<-c(unconditionalsList, list(temp=1:length(conditionalsMatrix)))
+  		      unconditionalsList<-c(unconditionalsList, list(temp=1:nrow(conditionalsMatrix)))
   		    }
   		    
   		    ##Expand grid on the unconditioned variables.
   		    unconditionalsMatrix <- expand.grid(unconditionalsList)
-		    
-		      ##modelMatrix is an empty matrix with the independent variables in the columns and 
-          ##all model configurations expanded out in the rows. Note that the matrix has an 
-          ##additional column for the newly created interaction term.
-		      modelMatrix <-matrix(rep(0),ncol=length(varNames)+1, nrow=nrow(modelConfigurations))
-		      colnames(modelMatrix)<- c(varNames, "interaction")
-		  
-		      ##Convert the matrix into a data frame for compatibility with the expand.grid function.
-		      modelMatrix <- as.data.frame(modelMatrix)
-		  
-		      ##Put in the configurations for the unconditioned variables (which are indicated 
-          ##by TRUE or FALSE) into modelMatrix.
-		      modelMatrix[,unconditionals]<-modelConfigurations[,unconditionals]
-		  
-		      ##Put in the configurations for the alwaysCondition variables into modelMatrix.
-		      modelMatrix[,always]<-modelConfigurations[,"alwaysCondition"]
-		  
-		      ##Do the same for the allNothingCondition and eitherOrCondition variables. 
-		      modelMatrix[,allNothing]<-modelConfigurations[,"allNothingCondition"]
-		  
-		      for (i in 1:length(eitherOr)){
-            modelMatrix[,eitherOr[i]]<-modelConfigurations[,"eitherOrCondition"]==eitherOr[i]
-		      }
-		  
-		      ##This for loop assigns TRUE to all variables in the interactions object to represent cases 
-          ##in which the interaction term and the constituent terms are included.
-		      for(i in 1:length(interactions)){
-  	        modelMatrix[which(modelConfigurations[,"interactionsCondition"]==TRUE),interactions[i]] <- TRUE
-		      }
+          
+          ##This function matches the models with a particular temp value to a row 
+          ##in the conditionalsMatrix 
+          ##Thus, for each model where temp==1 in unconditionals, we match it to the first row
+          ##of the conditionals. Same with 2 and so on all the way through the number of rows
+          ##in the unconditionals matrix (number of those type of models.
+          bindTogether<-function(i){cbind(unconditionalsMatrix[unconditionalsMatrix$temp==i,], conditionalsMatrix[i,])}
+          
+          ##Here, I'm llplying over all of the rows of the conditioned variable combination matrix
+          ##This is because temp in the unconditional matrix takes on a new value for each model 
+          ##in the conditioned matrix.So this matches temp==1 in unconditioned to row 1 
+          ##of the conditioned matrix 
+          ##lply returns a list and laply doesn't work in this context, so I use do.call with rbind
+          ##to get a matrix here.
+          modelMatrix<-do.call("rbind",llply(1:nrow(conditionalsMatrix), bindTogether))
+          
+          ##Finally, we remove temp. This makes it so modelMatrix is exactly the same but without
+          ##the temp variable.
+          modelMatrix$temp<-NULL
 
-		      ##For rows in which the constitutent terms are included, the interaction term 
-          ##should be included as well.
-          modelMatrix[which(modelMatrix[,interactions[1]]==1),"interaction"]<-TRUE
-  
-	 	      ##This for loop assigns TRUE to each constituent term to represent cases in which a 
-          ##single variable is included in the model.
-	 	      for(i in 1:(length(interactions))){
-  	        modelMatrix[which(modelConfigurations[,"interactionsCondition"]%in%interactions[i]),interactions[i]] <- TRUE
-          }
-  
-  		    ##This for loop assigns TRUE to both constituent terms to represent cases in which 
-          ##there is no interaction, but the constituent terms are included in the model.
-  		    for(i in 1:(length(interactions))){
-  	        modelMatrix[which(modelConfigurations[,"interactionsCondition"]=="both"),interactions[i]] <- TRUE
-          }
-  
-  		    #This for loop assigns FALSE to all variables in the interactions object to represent 
-          ##cases in which none of the variables are included in the model.
-  		    for(i in 1:(length(interactions))){
-  	        modelMatrix[which(modelConfigurations[,"interactionsCondition"]=="neither"),interactions[i]] <- FALSE
-          }	
-  	  
-  	      return(modelMatrix)
+          return(modelMatrix)
         }##close modelSelect function
         
         ##Trying to get modelSelect to work.
