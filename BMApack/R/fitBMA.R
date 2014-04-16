@@ -56,7 +56,9 @@ setMethod(f="fitBMA",
 		      ##Throw errors if the conditions specified are inappropriate.
   		    if(length(allNothing)==1){stop("If specifying allNothing, it must have at least two variables")}
   		    if(length(eitherOr)==1){stop("If specifying eitherOr, it must have at least two variables")}
-  		    if(length(interactions) < 2){stop("If specifying interaction, it must have at least two variables")}
+          
+          ##Had to comment out this warning because it's giving me trouble for specifying nothing.
+  		    #if(length(interactions) < 2){stop("If specifying interaction, it must have at least two variables")}
   		  
   		    ##The conditionals object contains variables that are conditioned.
   		    conditionals<-c(allNothing, eitherOr,always,interactions)
@@ -161,11 +163,13 @@ setMethod(f="fitBMA",
         }##close modelSelect function
         
         ##Trying to get modelSelect to work.
-        modelSelect(varNames=varNames,allNothing=c("var 1", "var 2"), 
-                    eitherOr=c("var 3", "var 4"), 
-                    always="var 5", 
-                    interactions=c("var 6", "var 7", "var 8")
-                    )
+        #modelSelect(varNames=varNames,
+                    #allNothing=c("var 1", "var 2"), 
+                    #eitherOr=c("var 3", "var 4"), 
+                    #always="var 5", 
+                    #interactions=c("var 6", "var 7"),
+                    #parallel=FALSE
+                    #)
 
             ## This function runs the regressions for each combination
             ## i is a list of variable names contained in matrix x
@@ -315,7 +319,7 @@ setMethod(f="fitBMA",
 x=matrix(rnorm(1000), ncol=10)
 colnames(x)<-paste("var", 1:10)
 y<-5*x[,1]+2*x[,2]+rnorm(100)
-fitBMA(x=x,y=y,parallel=FALSE, allNothing=c("var1", "var2"))
+fitBMA(x=x,y=y,parallel=FALSE, allNothing=c("var1", "var2"), interaction=NULL)
 
 
 
