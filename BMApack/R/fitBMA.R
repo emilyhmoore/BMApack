@@ -25,7 +25,7 @@
 #' @export
 
 setGeneric(name="fitBMA",
-           def=function(x, y, g=3, parallel=TRUE,allNothing=NULL, eitherOr=NULL,always=NULL,interactions=NULL)
+           def=function(x, y, g=3, parallel=TRUE,allNothing=NULL, eitherOr=NULL,always=NULL)
            {standardGeneric("fitBMA")}
            ) 
 
@@ -35,8 +35,7 @@ setMethod(f="fitBMA",
                               parallel=FALSE,
                               allNothing=NULL, 
                               eitherOr=NULL,
-                              always=NULL,
-                              interactions=NULL
+                              always=NULL
                               )
         {
           
@@ -48,8 +47,7 @@ setMethod(f="fitBMA",
                                     parallel,
                                     allNothing, 
                                     eitherOr,
-                                    always,
-                                    interactions
+                                    always
                                     )
               { 
 		          ##Throw errors if the conditions specified are inappropriate.
@@ -58,10 +56,12 @@ setMethod(f="fitBMA",
   		        if(length(eitherOr)==1){stop("If specifying eitherOr, 
                                            it must have at least two variables")}
           
-  		        ##The conditionals object contains variables that are conditioned. For now, I have excluded the interaction condition.
+  		        ##The conditionals object contains variables that are conditioned.
   		        conditionals<-c(allNothing,always,eitherOr)
   		  
-  		        ##conditionalsIndex returns the index of the conditioned variables. This is necessary because we want to separate the conditioned ones from the unconditioned variables.
+  		        ##conditionalsIndex returns the index of the conditioned variables. 
+              ##This is necessary because we want to separate the conditioned ones 
+              ##from the unconditioned variables.
   		        conditionalsIndex <- which(varNames%in%conditionals)
   		        unconditionals <- varNames[-conditionalsIndex]
 
@@ -208,11 +208,11 @@ setMethod(f="fitBMA",
             #names(varList) <- colnames(x)
 
             ##varList is now a list with labels the same as 'x' containing FALSE and TRUE for each variables
-            #modelSpace <- as.matrix(expand.grid(varList, KEEP.OUT.ATTRS=FALSE)) ## The complete list of all possible models
-            #modelSpace <- modelSpace[-1, ] # Remove the null model here
+            #modelMatrix <- as.matrix(expand.grid(varList, KEEP.OUT.ATTRS=FALSE)) ## The complete list of all possible models
+            #modelMatrix <- modelMatrix[-1, ] # Remove the null model here
 
             ##Get the list of lm objects associated with all possible regressions
-            #lmList<-alply(modelSpace,1, run.regs, .parallel=parallel)
+            #lmList<-alply(modelMatrix,1, run.regs, .parallel=parallel)
 #####JACOB'S CODE THAT CONFIGURES MODEL COMBINATIONS WITHOUT ANY CONDITIONS SPECIFIED ARE COMMENTED OUT ENDING HERE#####
  
 			      ##Get the modelMatrix from the modelSelect function.
@@ -220,15 +220,14 @@ setMethod(f="fitBMA",
                                        always=always, 
                                        allNothing=allNothing, 
                                        eitherOr=eitherOr,
-                                       interactions=interactions, 
                                        parallel=parallel)
 		  
 			      ##Convert modelMatrix, which is actually a data frame, to a matrix.
 			      modelMatrix <- as.matrix(modelMatrix)
-			
+
 			      ##Get the list of lm objects associated with all possible regressions
-            lmList<-alply(1:nrow(modelMatrix),run.regs, .parallel=parallel)
-            
+            lmList<-alply(modelMatrix,1,run.regs, .parallel=parallel)
+
             ##This gets the r.squared values and puts them in a list
             r2s<-laply(lmList, function(x){return(x[["R2"]])}, .parallel=parallel)
 
@@ -237,11 +236,11 @@ setMethod(f="fitBMA",
             standardErrors<-llply(lmList, function(x){return(x[["se"]])}, .parallel=parallel)
 
             ## Calculate the number of variabels in each model
-            numberVars <- rowSums(modelSpace)
+            numberVars <- rowSums(modelMatrix)
             ## Some useful constants
             n <- length(y)
-            m <- nrow(modelSpace) # number of total models
-            p <- ncol(modelSpace)+1
+            m <- nrow(modelMatrix) # number of total models
+            p <- ncol(modelMatrix)+1
             
             ##vector of bmk values for each model
             bfVec<-aaply(1:m,.margins=1,.fun=bayesFactor, .parallel=parallel)
@@ -251,12 +250,12 @@ setMethod(f="fitBMA",
             postProb <- matrix(bfVec/sum(bfVec), ncol=1)
 
             ##Pr(B!=0)
-            postProbcoefs <- t(modelSpace)%*%postProb
+            postProbcoefs <- t(modelMatrix)%*%postProb
 
             ##Get the names of the covariates whose coefficients are estimated for each model. 
-            coefMatrix <- sdMatrix <- cbind(rep(NA, m), modelSpace)
-            colnames(coefMatrix) <- colnames(sdMatrix) <- c("(Intercept)", colnames(modelSpace))
-            sdMatrix[modelSpace==FALSE] <- coefMatrix[modelSpace==FALSE] <- 0
+            coefMatrix <- sdMatrix <- cbind(rep(NA, m), modelMatrix)
+            colnames(coefMatrix) <- colnames(sdMatrix) <- c("(Intercept)", colnames(modelMatrix))
+            sdMatrix[modelMatrix==FALSE] <- coefMatrix[modelMatrix==FALSE] <- 0
 
             ## Make the coefficients list into a matrix
             for(i in 1:m){
@@ -269,8 +268,8 @@ setMethod(f="fitBMA",
 
 
             ## model space with constant
-            modelSpaceConst <- cbind(TRUE, modelSpace)
-            colnames(modelSpaceConst) <- c("(Intercept)", colnames(modelSpace))
+            modelMatrixConst <- cbind(TRUE, modelMatrix)
+            colnames(modelMatrixConst) <- c("(Intercept)", colnames(modelMatrix))
             
             ## E(B)
             expB <- t(coefMatrix)%*%postProb
@@ -278,14 +277,14 @@ setMethod(f="fitBMA",
             ## E(B|B!=0)
             expBcond <- rep(NA, p)
             for(i in 1:p){
-              these <- (modelSpaceConst[,i]==TRUE)
+              these <- (modelMatrixConst[,i]==TRUE)
               expBcond[i] <- (coefMatrix[these,i])%*% (postProb[these,])
             }
 
             ## se(B|B!=0)
             condSE <- rep(NA, p)
             for(i in 1:p){
-              these <- (modelSpaceConst[,i]==TRUE)
+              these <- (modelMatrixConst[,i]==TRUE)
               condSE[i] <- (sdMatrix[these,i])^2%*% (postProb[these,])
             }
             condSE <- sqrt(condSE)
@@ -293,14 +292,15 @@ setMethod(f="fitBMA",
             ## Pr(B>0|B!=0)
             largerZero <- rep(NA, p)
             for(i in 1:p){
-              these <- (modelSpaceConst[,i]==TRUE)
+              these <- (modelMatrixConst[,i]==TRUE)
               largerZero[i] <- pnorm(0, coefMatrix[these,i], sdMatrix[these,i], lower.tail=FALSE) %*%(postProb[these,])
              }
              
             ##Returned everything basically.
             ##The documentation will need to be changed for the help files.
             ##I think I got them all. Let me know if I missed any. 
-            return(new("bma", x=x, 
+            return(new("bma", 
+                       x=x, 
                        y=y, 
                        coefs=coefs,
                        standardErrors=standardErrors,
@@ -311,7 +311,8 @@ setMethod(f="fitBMA",
                        expB=expB,
                        expBcond=expBcond,
                        largerZero=largerZero,
-                       condSE=condSE))
+                       condSE=condSE)
+            )##close return on function
 
           }#close function definition
           ) ##Close method
@@ -319,10 +320,5 @@ setMethod(f="fitBMA",
 x=matrix(rnorm(1000), ncol=10)
 colnames(x)<-paste("var", 1:10)
 y<-5*x[,1]+2*x[,2]+rnorm(100)
-#fitBMA(x=x,y=y,parallel=FALSE, allNothing=c("var1", "var2"), interaction=NULL)
+trial<-fitBMA(x=x,y=y,allNothing=c("var1", "var2"), always="var 3", eitherOr=c("var 4", "var 5"))
 
-
-allNothing=c("var 1", "var 2")
-always=c("var 3", "var 4", "var 5")
-eitherOr=c("var 6", "var 7")
-interactions=NULL
