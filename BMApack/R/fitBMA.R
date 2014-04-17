@@ -311,7 +311,9 @@ setMethod(f="fitBMA",
                        expB=expB,
                        expBcond=expBcond,
                        largerZero=largerZero,
-                       condSE=condSE)
+                       condSE=condSE,
+                       coefMatrix=coefMatrix,
+                       sdMatrix=sdMatrix)
             )##close return on function
 
           }#close function definition
