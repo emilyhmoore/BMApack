@@ -21,100 +21,111 @@ setMethod(f="plot", signature="bma",
           definition=function(x,y,...){
             devAskNewPage(TRUE) #Setting so that you can scroll through various plots.
             
-            BMAtheses <- x@standardErrors #Extracting the standard deviations.
+            standardErrors <- x@sdMatrix #Extracting the standard errors matrix
             
-            BMAtheses[is.na(BMAtheses)] <- 0 #Setting NAs to 0.
+            modelCoefficients <- x@coefMatrix #Extracting the coefficients matrix
             
-            BMAthecoefs <- x@coefs #Extracting the coefficients.
             
-            BMAthecoefs[is.na(BMAthecoefs)] <- 0 #Setting NAs to 0.
-
             #Creating a list of coefficient estimates for all variables accross all models.
             #Each element in the list represents the coefficient estimates for a particular
             #variable for each model.
-            ceofslist.fun <- function(i){
-              coefslist <- list(NULL)
-              coefslist <- list(matrix(BMAthecoefs[,i]))
-              return(coefslist)
+            ceofList.fun <- function(i){
+              coefList <- list(NULL)
+              coefList <- list(matrix(modelCoefficients[,i]))
+              return(coefList)
             }
-            coefslist <- aaply(1:ncol(BMAthecoefs), .margins=1, .fun=ceofslist.fun)
+            coefList <- aaply(1:ncol(modelCoefficients), .margins=1, .fun=ceofList.fun)
             
-            #Creating a list of coefficient estimates for all variables across all models.
-            #Each element in the list represents the coefficient estimates for a particular
+            
+            #Creating a list of standard errors for all variables across all models.
+            #Each element in the list represents the standard error for a particular
             #variable for each model.
-            seslist.fun <- function(i){
-              seslist <- list(NULL)
-              seslist <- list(matrix(BMAtheses[,i]))
-              return(seslist)
+            standardErrorsList.fun <- function(i){
+              sdList <- list(NULL)
+              sdList <- list(matrix(standardErrors[,i]))
+              return(sdList)
             }
-            seslist <- aaply(1:ncol(BMAtheses), .margins=1, .fun=seslist.fun)
+            standardErrorsList<- aaply(1:ncol(standardErrors), .margins=1, .fun=standardErrorsList.fun)
+            
             
             #Extracting model odds.
-            modelodds <- x@bmk
+            modelOdds <- x@postProb
             
-            #Combining the coefficient estimates, standard deviations, and model odds for each
+            
+            #Combining the coefficient estimates, standard errors, and model odds for each
             #variable. Each element in the list represents one variable.
             cbind.fun <- function(i){
-              cbindmat <- list(NULL)
-              cbindmat <- cbind(coefslist[[i]], seslist[[i]], modelodds)
-              return(cbindmat)
+              cbindMatrix <- list(NULL)
+              cbindMatrix <- cbind(coefList[[i]], standardErrorsList[[i]], modelOdds)
+              return(cbindMatrix)
             }
-            totalmat <- llply(1:length(coefslist), .fun=cbind.fun)
+            totalMatrix <- llply(1:length(coefList), .fun=cbind.fun)
             
             #Omitting those models for which the specific variable is not included.
-            zeroelim.fun <- function(i){
-              nonzeromat <- list(NULL)
-              nonzeromat <- totalmat[[i]][rowSums(totalmat[[i]]==0)==0,]
-              return(nonzeromat)
+            zeroEliminator.fun <- function(i){
+              nonZeroMatrix <- list(NULL)
+              nonZeroMatrix <- totalMatrix[[i]][rowSums(totalMatrix[[i]]==0)==0,]
+              return(nonZeroMatrix)
             }
-            nonzeromat <- llply (1:length(totalmat), .fun=zeroelim.fun)
+            nonZeroMatrix <- llply (1:length(totalMatrix), .fun=zeroEliminator.fun)
+            
+            #'This for loop takes the model odds that are attached at the end of every matrix in the nonZeroMatrix list, and re-normalizes
+            #'them, so that we can accurately use them when calculating the heights.
+            for(i in 1:length(nonZeroMatrix)){
+              nonZeroMatrix[[i]][,ncol(nonZeroMatrix[[i]])] <-(nonZeroMatrix[[i]][,ncol(nonZeroMatrix[[i]])])/
+                sum(nonZeroMatrix[[i]][,ncol(nonZeroMatrix[[i]])])
+            }
+            
+            #This for loop crates an empty list where the values from running the dnorm function over the models will
+            #eventually be inserted.
+            dnormMatrix <- list()
+            for(j in 1:length(nonZeroMatrix)){
+              dnormMatrix[[j]] <- matrix(ncol=nrow(nonZeroMatrix[[j]]), nrow=100)
+            }            
             
             #Running dnorm function across all variables, using appropriate coefficient estimate
             #and standard deviation.
-            dnorm.fun <- function(j){
-              dnorm.fun2 <- function(i){
-                dnormmat <- matrix()
-                dnormmat <- dnorm(seq(min(nonzeromat[[j]][,1])-4*max(nonzeromat[[j]][,2]), 
-                                      
-                                      max(nonzeromat[[j]][,1])+4*max(nonzeromat[[j]][,2]), length=100),  
-                                  
-                                  mean=nonzeromat[[j]][i,1], sd=nonzeromat[[j]][i,2])
-                return(dnormmat)
+            for(i in 1:length(dnormMatrix)){
+              for(j in 1:nrow(nonZeroMatrix[[i]])){
+                dnormMatrix[[i]][,j] <- dnorm(seq(min(nonZeroMatrix[[i]][,1])-3*max(nonZeroMatrix[[i]][,2]), 
+                max(nonZeroMatrix[[i]][,1])+3*max(nonZeroMatrix[[i]][,2]), length=100), mean=nonZeroMatrix[[i]][j],
+                sd=nonZeroMatrix[[i]][,2][j])
               }
-              dnormmat <- t(aaply(1:nrow(nonzeromat[[j]]), .fun=dnorm.fun2, .margins=1))
             }
-            dnormmat2 <- llply(1:length(nonzeromat), .fun=dnorm.fun)
+            
             
             #Calculating the height of y at all points in sequence, which will be used to plot
             #the posterior distributions.
-            yheight.fun <- function(i){
-              heightmat <- list()
-              heightmat <- dnormmat2[[i]] %*% matrix(nonzeromat[[i]][,3])
-              return(heightmat)
+            yHeight.fun <- function(i){
+              heightMatrix <- list()
+              heightMatrix <- dnormMatrix[[i]] %*% matrix(nonZeroMatrix[[i]][,3])
+              return(heightMatrix)
             }
-            heightmat <- llply(1:length(dnormmat2), .fun=yheight.fun)
+            heightMatrix <- llply(1:length(dnormMatrix), .fun=yHeight.fun)
             
             #Calculating probability that particular variable is not included in model. Will be 
-            #used for vertical bar centered at zero on graph.
+            #used for vertical bar centered at zero on graph.            
             exclusion.fun <- function(i){
               exclusion <- numeric()
-              exclusion <- sum(is.na(x@theses[,i]))/length(x@theses[,i])
+              exclusion <- length(which(standardErrors[,i] == 0))/length(standardErrors[,i])
               return(exclusion)
             }
-            exclusion <- aaply(1:ncol(x@theses), .margins=1, .fun=exclusion.fun)
+            exclusion <- aaply(1:ncol(standardErrors), .margins=1, .fun=exclusion.fun)
+            
+            
             
             #Plotting posterior distributions of variables. Setting the x-axis to span 
-            #4 standard deviations to left and right of coefficient estimate. Adding
+            #3 standard deviations to left and right of coefficient estimate. Adding
             #vertical bar to indicate probability that variable is not included in model.
             coef.plot <- function(i){
-              plot(seq(min(nonzeromat[[i]][,1])-4*max(nonzeromat[[i]][,2]), 
+              plot(seq(min(nonZeroMatrix[[i]][,1])-3*max(nonZeroMatrix[[i]][,2]), 
                        
-                       max(nonzeromat[[i]][,1])+4*max(nonzeromat[[i]][,2]), length=100),
+                       max(nonZeroMatrix[[i]][,1])+3*max(nonZeroMatrix[[i]][,2]), length=100),
                    
-                   heightmat[[i]], type="l", xlab="", ylab="", main=paste("Variable", i))
+                   heightMatrix[[i]], type="l", xlab="", ylab="", main=i)
               
               segments(0,0,0,exclusion[i], lwd=3)       
             }
             
-            l_ply(1:length(heightmat), coef.plot)
+            l_ply(1:length(heightMatrix), coef.plot)
           })
