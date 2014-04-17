@@ -31,7 +31,7 @@ return(matrix(c(object@expB,
                 object@postProbcoefs,
                 object@largerZero),
               ncol=4,
-              dimnames=list(names(object@exp.vals),
+              dimnames=list(rownames(object@expB),
                             c("Conditional mean","Conditional SD","p(beta!=0|Y)","p(beta>0|Y,M)"))))
           })
 

@@ -1,0 +1,529 @@
+x <- matrix(rnorm(80),ncol=8)
+x
+colnames(x) <- paste("X",1:8,sep="")
+x
+y <- rnorm(10)
+y
+paralle <- FALSE
+allNothing <- c("X1","X2")
+eitherOr <- c("X3","X4")
+always <- c("X5")
+varNames <- colnames(x)
+varNames
+if(length(allNothing)==1){stop("If specifying allNothing,
+it must have at least two variables")}
+if(length(eitherOr)==1){stop("If specifying eitherOr,
+it must have at least two variables")}
+conditionals<-c(allNothing,always,eitherOr)
+conditionalsIndex <- which(varNames%in%conditionals)#
+  		        unconditionals <- varNames[-conditionalsIndex]
+alwaysCondition <- TRUE
+allNothingCondition<-c(TRUE, FALSE)
+conditionalsList<-list(alwaysCondition=alwaysCondition, #
+                                    allNothingCondition=allNothingCondition)
+conditionalsList
+otherConditionals<-conditionals[-c(which(conditionals%in%always),
+which(conditionals%in%allNothing))]
+otherConditionals
+always
+allNothing
+eitherOr
+otherConditionalsList<-list()
+otherConditionalsList<-llply(1:length(otherConditionals),
+function(i){otherConditionalsList[[i]]<-c(TRUE, FALSE)},
+.parallel=parallel)
+library(plyr)
+otherConditionalsList<-list()#
+		          otherConditionalsList<-llply(1:length(otherConditionals),#
+                                          function(i){otherConditionalsList[[i]]<-c(TRUE, FALSE)},#
+                                          .parallel=parallel)
+parallel<-FALSE
+otherConditionalsList<-list()#
+		          otherConditionalsList<-llply(1:length(otherConditionals),#
+                                          function(i){otherConditionalsList[[i]]<-c(TRUE, FALSE)},#
+                                          .parallel=parallel)
+otherConditionalsList
+otherConditionals
+names(otherConditionalsList)<-otherConditionals
+otherConditionalsList
+conditionalsList<-c(conditionalsList, otherConditionalsList)
+conditionalsList
+allNothing
+eitherOr
+always
+conditionalsModels <- expand.grid(conditionalsList)
+conditionalsModels
+conditionalsMatrix <-matrix(rep(FALSE),ncol=length(c(allNothing, always)),
+nrow=nrow(conditionalsModels))
+conditionalsMatrix
+colnames(conditionalsMatrix)<-c(allNothing, always)
+conditionalsMatrix
+conditionalsMatrix[,always]<-conditionalsModels[,"alwaysCondition"]
+conditionalsMatrix
+conditionalsMatrix[,allNothing]<-conditionalsModels[,"allNothingCondition"]
+conditionalsMatrix
+otherConditionals
+conditionalsModel
+conditionalsModels
+conditionalsMatrix
+conditionalsMatrix<-cbind(conditionalsMatrix,conditionalsModels[,otherConditionals])
+conditionalsMatrix
+unconditionalsList<-list()
+f(length(unconditionals)!=0){#
+                length(unconditionalsList)<-length(unconditionals)#
+  		          unconditionalsList<-llply(1:length(unconditionals), #
+  		                                    function(i){unconditionalsList[[i]]<-c(TRUE, FALSE)},#
+  		                                    .parallel=parallel)
+unconditionalsList
+unconditionals
+unconditionalsList<-c(unconditionalsList, list(temp=1:nrow(conditionalsMatrix)))
+unconditionalsList
+conditionalsMatrix
+if(length(unconditionals)!=0){#
+                length(unconditionalsList)<-length(unconditionals)#
+  		          unconditionalsList<-llply(1:length(unconditionals), #
+  		                                    function(i){unconditionalsList[[i]]<-c(TRUE, FALSE)},#
+  		                                    .parallel=parallel)#
+  		          unconditionalsList<-c(unconditionalsList, list(temp=1:nrow(conditionalsMatrix)))#
+                names(unconditionalsList)<-c(unconditionals, "temp")#
+  		        }
+unconditionalsList
+unconditionalsMatrix <- expand.grid(unconditionalsList)
+unconditionalsMatrix
+conditionalsMatrix
+bindTogether<-function(i){cbind(unconditionalsMatrix[unconditionalsMatrix$temp==i,], conditionalsMatrix[i,])}
+?do.call
+modelMatrix<-do.call("rbind",llply(1:nrow(conditionalsMatrix), bindTogether))
+modelMatrix
+modelMatrix$temp<-NULL
+modelMatrix
+modelMatrix<-modelMatrix[colnames(x)]
+modelMatrix
+return(modelMatrix)
+modelSelect<-function(varNames, #
+                                    parallel,#
+                                    allNothing, #
+                                    eitherOr,#
+                                    always#
+                                    )#
+              { #
+		          ##Throw errors if the conditions specified are inappropriate.#
+  		        if(length(allNothing)==1){stop("If specifying allNothing, #
+                                             it must have at least two variables")}#
+  		        if(length(eitherOr)==1){stop("If specifying eitherOr, #
+                                           it must have at least two variables")}#
+  		        ##The conditionals object contains variables that are conditioned.#
+  		        conditionals<-c(allNothing,always,eitherOr)#
+  		        ##conditionalsIndex returns the index of the conditioned variables. #
+              ##This is necessary because we want to separate the conditioned ones #
+              ##from the unconditioned variables.#
+  		        conditionalsIndex <- which(varNames%in%conditionals)#
+  		        unconditionals <- varNames[-conditionalsIndex]#
+#
+		          ##The always condition is always included.#
+		          alwaysCondition <- TRUE#
+		          ##The allNothing condition is either included or not included.#
+		          allNothingCondition<-c(TRUE, FALSE)#
+		          ###
+              ##We will need to be able to take lists of allnothings eventually.#
+              ###
+		          ##The conditionalsList is all configurations for the conditioned variables combined.#
+		          conditionalsList<-list(alwaysCondition=alwaysCondition, #
+                                    allNothingCondition=allNothingCondition)#
+              ##This is all conditionals that are not always or allNothing types#
+  		        otherConditionals<-conditionals[-c(which(conditionals%in%always), #
+                                                which(conditionals%in%allNothing))]#
+              ##Make a list for the variables that are just going to be true false before they are #
+              ##stripped away#
+              otherConditionalsList<-list()#
+		          otherConditionalsList<-llply(1:length(otherConditionals),#
+                                          function(i){otherConditionalsList[[i]]<-c(TRUE, FALSE)},#
+                                          .parallel=parallel)#
+		          names(otherConditionalsList)<-otherConditionals#
+              conditionalsList<-c(conditionalsList, otherConditionalsList)#
+#
+              ##Expand grid on the conditioned variables.#
+              conditionalsModels <- expand.grid(conditionalsList)#
+#
+              conditionalsMatrix <-matrix(rep(FALSE),ncol=length(c(allNothing, always)), #
+                                      nrow=nrow(conditionalsModels))#
+              colnames(conditionalsMatrix)<-c(allNothing, always)#
+		          ##Put in the configurations for the alwaysCondition variables into conditionalsMatrix.#
+		          conditionalsMatrix[,always]<-conditionalsModels[,"alwaysCondition"]#
+#
+		          ##Do the same for the allNothingCondition.This should look the same #
+              ##for each variable in a set of allNothings #
+		          conditionalsMatrix[,allNothing]<-conditionalsModels[,"allNothingCondition"]#
+              ##cbind that to the expandgrid results for any of the "otherConditionals" #
+              ##which is just conditionals that are not always or allNothing types.#
+              ##They vary as normal in expand grid and are stripped out later.#
+              conditionalsMatrix<-cbind(conditionalsMatrix,conditionalsModels[,otherConditionals])#
+              ################################################################################
+              ###############This is where we need to strip out "bad" models##################
+              ###############BEFORE the temp variable is created for use with#################
+              ###############the unconditionals###############################################
+              ################################################################################
+  		        ##This is an empty list for the unconditioned variables that will be put into the expand.grid function.#
+  		        unconditionalsList<-list()#
+  		        ##The unconditionalsList will not be created if all variables are conditioned. #
+  		        ##If there are unconditioned variables, however, the following code generates a #
+  		        ##list that says TRUE and FALSE for each unconditioned variable.#
+  		        if(length(unconditionals)!=0){#
+                length(unconditionalsList)<-length(unconditionals)#
+  		          unconditionalsList<-llply(1:length(unconditionals), #
+  		                                    function(i){unconditionalsList[[i]]<-c(TRUE, FALSE)},#
+  		                                    .parallel=parallel)#
+  		          unconditionalsList<-c(unconditionalsList, list(temp=1:nrow(conditionalsMatrix)))#
+                names(unconditionalsList)<-c(unconditionals, "temp")#
+  		        }#
+  		        ##Expand grid on the unconditioned variables.#
+  		        unconditionalsMatrix <- expand.grid(unconditionalsList)#
+              ##This function matches the models with a particular temp value to a row #
+              ##in the conditionalsMatrix #
+              ##Thus, for each model where temp==1 in unconditionals, we match it to the first row#
+              ##of the conditionals. Same with 2 and so on all the way through the number of rows#
+              ##in the unconditionals matrix (number of those type of models.#
+              bindTogether<-function(i){cbind(unconditionalsMatrix[unconditionalsMatrix$temp==i,], conditionalsMatrix[i,])}#
+              ##Here, I'm llplying over all of the rows of the conditioned variable combination matrix#
+              ##This is because temp in the unconditional matrix takes on a new value for each model #
+              ##in the conditioned matrix.So this matches temp==1 in unconditioned to row 1 #
+              ##of the conditioned matrix #
+              ##lply returns a list and laply doesn't work in this context, so I use do.call with rbind#
+              ##to get a matrix here.#
+              modelMatrix<-do.call("rbind",llply(1:nrow(conditionalsMatrix), bindTogether))#
+              ##Finally, we remove temp. This makes it so modelMatrix is exactly the same but without#
+              ##the temp variable.#
+              modelMatrix$temp<-NULL#
+              ##This ensures that the variables go back into the order they originally were in for the input#
+              ##matrix of fitbma. This is essential because they can easily get out of order in the#
+              ##conditioning process.#
+              modelMatrix<-modelMatrix[colnames(x)]#
+              return(modelMatrix)#
+            }##close modelSelect function
+modelSelect(varNames,allNothing,eitherOr,always,parallel)
+eitherOr
+modelSelect(varNames=varNames,allNothing=allNothing,eitherOr=eitherOr,always=always,parallel)
+run.regs<-function(i){#
+              thisLM <- lm(y~x[,i])#
+              thisCoef <- coef(thisLM);  names(thisCoef) <- c("(Intercept)", colnames(x)[i])#
+              thisSE <-  summary(thisLM)$coefficients[,2]; names(thisSE) <- c("(Intercept)", colnames(x)[i])#
+              thisR2 <- summary(thisLM)$r.squared#
+              return(list(coef=thisCoef, se=thisSE, R2=thisR2))#
+            }
+bayesFactor<-function(index){#
+              bf <- (1+g)^((n-numberVars[index]-1)/2)*((1+g*(1-r2s[index]))^(-(n-1)/2))#
+              names(bf)<-c("bf")#
+              return(bf)#
+            }
+if(length(unique(colnames(x)))<ncol(x)){#
+              stop("Must have unique names for each column")#
+            }
+modelMatrix
+modelMatrix <- as.matrix(modelMatrix)
+modelMatrix
+lmList<-alply(modelMatrix,1,run.regs, .parallel=parallel)
+lmList
+x
+r2s<-laply(lmList, function(x){return(x[["R2"]])}, .parallel=parallel)
+r2s
+coefs<-llply(lmList, function(x){return(x[["coef"]])}, .parallel=parallel)
+standardErrors<-llply(lmList, function(x){return(x[["se"]])}, .parallel=parallel)
+coefs
+standardErrors
+numberVars <- rowSums(modelMatrix)
+numberVars
+n <- length(y)
+m <- nrow(modelMatrix) # number of total models
+p <- ncol(modelMatrix)+1
+bfVec<-aaply(1:m,.margins=1,.fun=bayesFactor, .parallel=parallel)
+g<-3
+bfVec<-aaply(1:m,.margins=1,.fun=bayesFactor, .parallel=parallel)
+bfVec
+head(r2s)
+postProb <- matrix(bfVec/sum(bfVec), ncol=1)
+postPrrb
+postProb
+modelMatrix
+postProbcoefs <- t(modelMatrix)%*%postProb
+coefMatrix <- sdMatrix <- cbind(rep(NA, m), modelMatrix)
+colnames(coefMatrix) <- colnames(sdMatrix) <- c("(Intercept)", colnames(modelMatrix))
+coefMatrix
+sdMatrix[modelMatrix==FALSE] <- coefMatrix[modelMatrix==FALSE] <- 0
+sdMatrix
+for(i in 1:m){#
+              coefMatrix[i,names(coefs[[i]])] <- coefs[[i]]#
+            }
+coefMatrix
+for(i in 1:m){#
+              sdMatrix[i,names(standardErrors[[i]])] <- standardErrors[[i]]#
+            }
+sdMatrix
+modelMatrixConst <- cbind(TRUE, modelMatrix)
+modelMatrixConst
+colnames(modelMatrixConst) <- c("(Intercept)", colnames(modelMatrix))
+coefMatrix
+expB <- t(coefMatrix)%*%postProb
+p
+modelMatrixConst
+expBcond <- rep(NA, p)#
+            for(i in 1:p){#
+              these <- (modelMatrixConst[,i]==TRUE)#
+              expBcond[i] <- (coefMatrix[these,i])%*% (postProb[these,])#
+            }
+expBcond
+these
+coefMatrix
+these
+postProb
+condSE <- rep(NA, p)#
+            for(i in 1:p){#
+              these <- (modelMatrixConst[,i]==TRUE)#
+              condSE[i] <- (sdMatrix[these,i])^2%*% (postProb[these,])#
+            }#
+            condSE <- sqrt(condSE)
+condSE
+largerZero <- rep(NA, p)#
+            for(i in 1:p){#
+              these <- (modelMatrixConst[,i]==TRUE)#
+              largerZero[i] <- pnorm(0, coefMatrix[these,i], sdMatrix[these,i], lower.tail=FALSE) %*%(postProb[these,])#
+             }
+largerZero
+library(devtools)
+library(roxygen2)
+current.code <- as.package("BMAPack")
+setwd("/Users/jaeheejung/Desktop/Spring 2014/Applied Statistical Programming")
+current.code <- as.package("BMAPack")
+setwd("/Users/jaeheejung/Desktop/Spring 2014/Applied Statistical Programming/BMAPack")
+current.code <- as.package("BMAPack")
+load_all(current.code)
+document(current.code)
+fitBMA()
+fitBMA(x,y)
+x
+y
+allNothing
+eitherOr
+always
+fitBMA(x,y,g,parallel,allNothing,eitherOr,always)
+str(fitBMA(x,y,g,parallel,allNothing,eitherOr,always))
+plot(x,y)
+plot(fitBMA(x,y,g,parallel,allNothing,eitherOr,always))
+varNames
+library(devtools)
+library(roxygen2)
+current.code <- as.package("BMAPack")
+load_all(current.code)
+document(current.code)
+x <- matrix(rnorm(80),ncol=8)
+colnames(x) <- paste("X",1:8,sep="")
+y <- rnorm(10)
+allNothing <- c("X1","X2")
+always <- c("X3","X4")
+eitherOr <- c("X5","X6")
+fitBMA(x,y,g=3,parallel=FALSE,allNothing=allNothing,eitherOr=eitherOr,always=always)
+summary(fitBMA(x,y,g=3,parallel=FALSE,allNothing=allNothing,eitherOr=eitherOr,always=always))
+str(fitBMA(x,y,g=3,parallel=FALSE,allNothing=allNothing,eitherOr=eitherOr,always=always))
+varNames <- colnames(x)
+conditionals<-c(allNothing,always,eitherOr)#
+  		        ##conditionalsIndex returns the index of the conditioned variables. #
+              ##This is necessary because we want to separate the conditioned ones #
+              ##from the unconditioned variables.#
+  		        conditionalsIndex <- which(varNames%in%conditionals)#
+  		        unconditionals <- varNames[-conditionalsIndex]#
+#
+		          ##The always condition is always included.#
+		          alwaysCondition <- TRUE#
+		          ##The allNothing condition is either included or not included.#
+		          allNothingCondition<-c(TRUE, FALSE)#
+		          ###
+              ##We will need to be able to take lists of allnothings eventually.#
+              ###
+		          ##The conditionalsList is all configurations for the conditioned variables combined.#
+		          conditionalsList<-list(alwaysCondition=alwaysCondition, #
+                                    allNothingCondition=allNothingCondition)#
+              ##This is all conditionals that are not always or allNothing types#
+  		        otherConditionals<-conditionals[-c(which(conditionals%in%always), #
+                                                which(conditionals%in%allNothing))]#
+              ##Make a list for the variables that are just going to be true false before they are #
+              ##stripped away#
+              otherConditionalsList<-list()#
+		          otherConditionalsList<-llply(1:length(otherConditionals),#
+                                          function(i){otherConditionalsList[[i]]<-c(TRUE, FALSE)},#
+                                          .parallel=parallel)#
+		          names(otherConditionalsList)<-otherConditionals#
+              conditionalsList<-c(conditionalsList, otherConditionalsList)#
+#
+              ##Expand grid on the conditioned variables.#
+              conditionalsModels <- expand.grid(conditionalsList)#
+#
+              conditionalsMatrix <-matrix(rep(FALSE),ncol=length(c(allNothing, always)), #
+                                      nrow=nrow(conditionalsModels))#
+              colnames(conditionalsMatrix)<-c(allNothing, always)#
+		          ##Put in the configurations for the alwaysCondition variables into conditionalsMatrix.#
+		          conditionalsMatrix[,always]<-conditionalsModels[,"alwaysCondition"]#
+#
+		          ##Do the same for the allNothingCondition.This should look the same #
+              ##for each variable in a set of allNothings #
+		          conditionalsMatrix[,allNothing]<-conditionalsModels[,"allNothingCondition"]#
+              ##cbind that to the expandgrid results for any of the "otherConditionals" #
+              ##which is just conditionals that are not always or allNothing types.#
+              ##They vary as normal in expand grid and are stripped out later.#
+              conditionalsMatrix<-cbind(conditionalsMatrix,conditionalsModels[,otherConditionals])#
+              ################################################################################
+              ###############This is where we need to strip out "bad" models##################
+              ###############BEFORE the temp variable is created for use with#################
+              ###############the unconditionals###############################################
+              ################################################################################
+  		        ##This is an empty list for the unconditioned variables that will be put into the expand.grid function.#
+  		        unconditionalsList<-list()#
+  		        ##The unconditionalsList will not be created if all variables are conditioned. #
+  		        ##If there are unconditioned variables, however, the following code generates a #
+  		        ##list that says TRUE and FALSE for each unconditioned variable.#
+  		        if(length(unconditionals)!=0){#
+                length(unconditionalsList)<-length(unconditionals)#
+  		          unconditionalsList<-llply(1:length(unconditionals), #
+  		                                    function(i){unconditionalsList[[i]]<-c(TRUE, FALSE)},#
+  		                                    .parallel=parallel)#
+  		          unconditionalsList<-c(unconditionalsList, list(temp=1:nrow(conditionalsMatrix)))#
+                names(unconditionalsList)<-c(unconditionals, "temp")#
+  		        }#
+  		        ##Expand grid on the unconditioned variables.#
+  		        unconditionalsMatrix <- expand.grid(unconditionalsList)#
+              ##This function matches the models with a particular temp value to a row #
+              ##in the conditionalsMatrix #
+              ##Thus, for each model where temp==1 in unconditionals, we match it to the first row#
+              ##of the conditionals. Same with 2 and so on all the way through the number of rows#
+              ##in the unconditionals matrix (number of those type of models.#
+              bindTogether<-function(i){cbind(unconditionalsMatrix[unconditionalsMatrix$temp==i,], conditionalsMatrix[i,])}#
+              ##Here, I'm llplying over all of the rows of the conditioned variable combination matrix#
+              ##This is because temp in the unconditional matrix takes on a new value for each model #
+              ##in the conditioned matrix.So this matches temp==1 in unconditioned to row 1 #
+              ##of the conditioned matrix #
+              ##lply returns a list and laply doesn't work in this context, so I use do.call with rbind#
+              ##to get a matrix here.#
+              modelMatrix<-do.call("rbind",llply(1:nrow(conditionalsMatrix), bindTogether))#
+              ##Finally, we remove temp. This makes it so modelMatrix is exactly the same but without#
+              ##the temp variable.#
+              modelMatrix$temp<-NULL#
+              ##This ensures that the variables go back into the order they originally were in for the input#
+              ##matrix of fitbma. This is essential because they can easily get out of order in the#
+              ##conditioning process.#
+              modelMatrix<-modelMatrix[colnames(x)]
+parallel <- FALSE
+if(length(allNothing)==1){stop("If specifying allNothing, #
+                                             it must have at least two variables")}#
+  		        if(length(eitherOr)==1){stop("If specifying eitherOr, #
+                                           it must have at least two variables")}#
+  		        ##The conditionals object contains variables that are conditioned.#
+  		        conditionals<-c(allNothing,always,eitherOr)#
+  		        ##conditionalsIndex returns the index of the conditioned variables. #
+              ##This is necessary because we want to separate the conditioned ones #
+              ##from the unconditioned variables.#
+  		        conditionalsIndex <- which(varNames%in%conditionals)#
+  		        unconditionals <- varNames[-conditionalsIndex]#
+#
+		          ##The always condition is always included.#
+		          alwaysCondition <- TRUE#
+		          ##The allNothing condition is either included or not included.#
+		          allNothingCondition<-c(TRUE, FALSE)#
+		          ###
+              ##We will need to be able to take lists of allnothings eventually.#
+              ###
+		          ##The conditionalsList is all configurations for the conditioned variables combined.#
+		          conditionalsList<-list(alwaysCondition=alwaysCondition, #
+                                    allNothingCondition=allNothingCondition)#
+              ##This is all conditionals that are not always or allNothing types#
+  		        otherConditionals<-conditionals[-c(which(conditionals%in%always), #
+                                                which(conditionals%in%allNothing))]#
+              ##Make a list for the variables that are just going to be true false before they are #
+              ##stripped away#
+              otherConditionalsList<-list()#
+		          otherConditionalsList<-llply(1:length(otherConditionals),#
+                                          function(i){otherConditionalsList[[i]]<-c(TRUE, FALSE)},#
+                                          .parallel=parallel)#
+		          names(otherConditionalsList)<-otherConditionals#
+              conditionalsList<-c(conditionalsList, otherConditionalsList)#
+#
+              ##Expand grid on the conditioned variables.#
+              conditionalsModels <- expand.grid(conditionalsList)#
+#
+              conditionalsMatrix <-matrix(rep(FALSE),ncol=length(c(allNothing, always)), #
+                                      nrow=nrow(conditionalsModels))#
+              colnames(conditionalsMatrix)<-c(allNothing, always)#
+		          ##Put in the configurations for the alwaysCondition variables into conditionalsMatrix.#
+		          conditionalsMatrix[,always]<-conditionalsModels[,"alwaysCondition"]#
+#
+		          ##Do the same for the allNothingCondition.This should look the same #
+              ##for each variable in a set of allNothings #
+		          conditionalsMatrix[,allNothing]<-conditionalsModels[,"allNothingCondition"]#
+              ##cbind that to the expandgrid results for any of the "otherConditionals" #
+              ##which is just conditionals that are not always or allNothing types.#
+              ##They vary as normal in expand grid and are stripped out later.#
+              conditionalsMatrix<-cbind(conditionalsMatrix,conditionalsModels[,otherConditionals])#
+              ################################################################################
+              ###############This is where we need to strip out "bad" models##################
+              ###############BEFORE the temp variable is created for use with#################
+              ###############the unconditionals###############################################
+              ################################################################################
+  		        ##This is an empty list for the unconditioned variables that will be put into the expand.grid function.#
+  		        unconditionalsList<-list()#
+  		        ##The unconditionalsList will not be created if all variables are conditioned. #
+  		        ##If there are unconditioned variables, however, the following code generates a #
+  		        ##list that says TRUE and FALSE for each unconditioned variable.#
+  		        if(length(unconditionals)!=0){#
+                length(unconditionalsList)<-length(unconditionals)#
+  		          unconditionalsList<-llply(1:length(unconditionals), #
+  		                                    function(i){unconditionalsList[[i]]<-c(TRUE, FALSE)},#
+  		                                    .parallel=parallel)#
+  		          unconditionalsList<-c(unconditionalsList, list(temp=1:nrow(conditionalsMatrix)))#
+                names(unconditionalsList)<-c(unconditionals, "temp")#
+  		        }#
+  		        ##Expand grid on the unconditioned variables.#
+  		        unconditionalsMatrix <- expand.grid(unconditionalsList)#
+              ##This function matches the models with a particular temp value to a row #
+              ##in the conditionalsMatrix #
+              ##Thus, for each model where temp==1 in unconditionals, we match it to the first row#
+              ##of the conditionals. Same with 2 and so on all the way through the number of rows#
+              ##in the unconditionals matrix (number of those type of models.#
+              bindTogether<-function(i){cbind(unconditionalsMatrix[unconditionalsMatrix$temp==i,], conditionalsMatrix[i,])}#
+              ##Here, I'm llplying over all of the rows of the conditioned variable combination matrix#
+              ##This is because temp in the unconditional matrix takes on a new value for each model #
+              ##in the conditioned matrix.So this matches temp==1 in unconditioned to row 1 #
+              ##of the conditioned matrix #
+              ##lply returns a list and laply doesn't work in this context, so I use do.call with rbind#
+              ##to get a matrix here.#
+              modelMatrix<-do.call("rbind",llply(1:nrow(conditionalsMatrix), bindTogether))#
+              ##Finally, we remove temp. This makes it so modelMatrix is exactly the same but without#
+              ##the temp variable.#
+              modelMatrix$temp<-NULL#
+              ##This ensures that the variables go back into the order they originally were in for the input#
+              ##matrix of fitbma. This is essential because they can easily get out of order in the#
+              ##conditioning process.#
+              modelMatrix<-modelMatrix[colnames(x)]
+modelMatrix
+x
+y
+coefs
+x
+names(x)
+colnames(x)
+library(devtools)
+library(roxygen2)
+current.code <- as.package("BMAPack")
+load_all(current.code)
+document(current.code)
+fitBMA(x,y,g=3,parallel,allNothing,eitherOr,always)
+summary(fitBMA(x,y,g=3,parallel,allNothing,eitherOr,always))
+current.code <- as.package("BMAPack")
+load_all(current.code)
+document(current.code)
+summary(fitBMA(x,y,g=3,parallel,allNothing,eitherOr,always))
+a <- fitBMA(x,y,g=3,parallel,allNothing,eitherOr,always)
+a
+a@expB
+names(a@expB)
+rownames(a@expB)
+a@condSE
+a@postProbcoefs
+a@largerZero
+summary(a)

@@ -13,11 +13,3 @@ Depends:
 License: GPL (>=2)
 Suggests:
     devtools
-Collate:
-    'BMApack-package.r'
-    'bma-class.R'
-    'fitBMA.R'
-    'modelselector5.R'
-    'plot.bma.R'
-    'print.bma.R'
-    'summary.bma.R'

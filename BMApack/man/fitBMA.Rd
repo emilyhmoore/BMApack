@@ -1,6 +1,10 @@
 \name{fitBMA}
 \alias{fitBMA}
 \title{fitBMA Function}
+\usage{
+fitBMA(x, y, g = 3, parallel = TRUE, allNothing = NULL, eitherOr = NULL,
+  always = NULL)
+}
 \arguments{
   \item{x:}{A numeric matrix of covariates}
 
@@ -12,17 +16,17 @@
   \item{parallel:}{runs in parallel if TRUE}
 }
 \value{
-  An bma class object with following slots:
-  \item{combo.coef}{A list of coefficients from each
-  regression} \item{combo.fit}{Vector of R-squared Values}
-  \item{bmk}{Vector of posterior probability odds}
-  \item{exp.vals}{A vector of expected coefficient values}
-  \item{coefprobs}{A vector of probabilities that the
-  coefficient is non-zero}
+An bma class object with following slots:
+\item{combo.coef}{A list of coefficients from each
+regression} \item{combo.fit}{Vector of R-squared Values}
+\item{bmk}{Vector of posterior probability odds}
+\item{exp.vals}{A vector of expected coefficient values}
+\item{coefprobs}{A vector of probabilities that the
+coefficient is non-zero}
 }
 \description{
-  Runs regression on all possible combos of covariates and
-  returns coefs, R2, and BMA stats
+Runs regression on all possible combos of covariates and
+returns coefs, R2, and BMA stats
 }
 \examples{
 x1<-rnorm(500)
@@ -32,7 +36,7 @@ covars<-cbind(x1,x2)
 fitBMA(x=covars, y=dep, parallel=FALSE)
 }
 \author{
-  Jacob Montgomery, Dino Hadzic, Jae Hee Jung, and Emily
-  Moore
+Jacob Montgomery, Dino Hadzic, Jae Hee Jung, and Emily
+Moore
 }
 
