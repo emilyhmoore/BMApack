@@ -33,7 +33,9 @@ setClass(Class="bma",
            expBcond="numeric",
            postProb="matrix",
            largerZero="numeric",
-           condSE="numeric"
+           condSE="numeric",
+           coefMatrix="matrix",
+           sdMatrix="matrix"
          ),
          prototype = prototype(
              x=matrix(), 
@@ -47,7 +49,9 @@ setClass(Class="bma",
              expB=matrix(),
              expBcond=numeric(),
              largerZero=numeric(),
-             condSE=numeric()
+             condSE=numeric(),
+             coefMatrix=matrix(),
+             sdMatrix=matrix()
          )
 )
 
