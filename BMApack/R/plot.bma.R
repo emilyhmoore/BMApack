@@ -80,7 +80,7 @@ setMethod(f="plot", signature="bma",
             #eventually be inserted.
             dnormMatrix <- list()
             for(j in 1:length(nonZeroMatrix)){
-              dnormMatrix[[j]] <- matrix(ncol=nrow(nonZeroMatrix[[j]]), nrow=100)
+              dnormMatrix[[j]] <- matrix(ncol=nrow(nonZeroMatrix[[j]]), nrow=1000)
             }            
             
             #Running dnorm function across all variables, using appropriate coefficient estimate
@@ -88,8 +88,8 @@ setMethod(f="plot", signature="bma",
             for(i in 1:length(dnormMatrix)){
               for(j in 1:nrow(nonZeroMatrix[[i]])){
                 dnormMatrix[[i]][,j] <- dnorm(seq(min(nonZeroMatrix[[i]][,1])-3*max(nonZeroMatrix[[i]][,2]), 
-                max(nonZeroMatrix[[i]][,1])+3*max(nonZeroMatrix[[i]][,2]), length=100), mean=nonZeroMatrix[[i]][j],
-                sd=nonZeroMatrix[[i]][,2][j])
+                                                  max(nonZeroMatrix[[i]][,1])+3*max(nonZeroMatrix[[i]][,2]), length=1000), mean=nonZeroMatrix[[i]][j],
+                                              sd=nonZeroMatrix[[i]][,2][j])
               }
             }
             
@@ -120,7 +120,7 @@ setMethod(f="plot", signature="bma",
             coef.plot <- function(i){
               plot(seq(min(nonZeroMatrix[[i]][,1])-3*max(nonZeroMatrix[[i]][,2]), 
                        
-                       max(nonZeroMatrix[[i]][,1])+3*max(nonZeroMatrix[[i]][,2]), length=100),
+                       max(nonZeroMatrix[[i]][,1])+3*max(nonZeroMatrix[[i]][,2]), length=1000),
                    
                    heightMatrix[[i]], type="l", xlab="", ylab="", main=i)
               
