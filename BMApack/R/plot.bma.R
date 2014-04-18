@@ -69,13 +69,6 @@ setMethod(f="plot", signature="bma",
             }
             nonZeroMatrix <- llply (1:length(totalMatrix), .fun=zeroEliminator.fun)
             
-            #'This for loop takes the model odds that are attached at the end of every matrix in the nonZeroMatrix list, and re-normalizes
-            #'them, so that we can accurately use them when calculating the heights.
-            for(i in 1:length(nonZeroMatrix)){
-              nonZeroMatrix[[i]][,ncol(nonZeroMatrix[[i]])] <-(nonZeroMatrix[[i]][,ncol(nonZeroMatrix[[i]])])/
-                sum(nonZeroMatrix[[i]][,ncol(nonZeroMatrix[[i]])])
-            }
-            
             #This for loop crates an empty list where the values from running the dnorm function over the models will
             #eventually be inserted.
             dnormMatrix <- list()
@@ -122,10 +115,11 @@ setMethod(f="plot", signature="bma",
                        
                        max(nonZeroMatrix[[i]][,1])+3*max(nonZeroMatrix[[i]][,2]), length=1000),
                    
-                   heightMatrix[[i]], type="l", xlab="", ylab="", main=i)
-              
-              segments(0,0,0,exclusion[i], lwd=3)       
+                   heightMatrix[[i]], type="l", xlab="", ylab="", main=paste("Variable",i),
+                   
+                   segments(0,0,0,exclusion[i], lwd=3))       
             }
             
             l_ply(1:length(heightMatrix), coef.plot)
           })
+
