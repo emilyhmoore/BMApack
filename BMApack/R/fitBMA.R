@@ -50,11 +50,6 @@ setMethod(f="fitBMA",
                                     always
                                     )
               { 
-		          ##Throw errors if the conditions specified are inappropriate.
-  		        if(length(allNothing)==1){stop("If specifying allNothing, 
-                                             it must have at least two variables")}
-  		        if(length(eitherOr)==1){stop("If specifying eitherOr, 
-                                           it must have at least two variables")}
           
   		        ##The conditionals object contains variables that are conditioned.
   		        conditionals<-c(allNothing,always,eitherOr)
@@ -84,10 +79,14 @@ setMethod(f="fitBMA",
               ##Make a list for the variables that are just going to be true false before they are 
               ##stripped away
               otherConditionalsList<-list()
+               if(length(otherConditionals)!=0){
+		          
 		          otherConditionalsList<-llply(1:length(otherConditionals),
                                           function(i){otherConditionalsList[[i]]<-c(TRUE, FALSE)},
                                           .parallel=parallel)
-		          names(otherConditionalsList)<-otherConditionals
+                                          }
+                                       
+                                           names(otherConditionalsList)<-otherConditionals
           
               conditionalsList<-c(conditionalsList, otherConditionalsList)
 
