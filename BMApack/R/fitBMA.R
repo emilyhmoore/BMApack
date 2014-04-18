@@ -177,9 +177,9 @@ setMethod(f="fitBMA",
             ## Runs a regression without a constant
             ## Outputs the relevant object of class lm
             run.regs<-function(i){
-              thisLM <- lm(y~x[,i])
-              thisCoef <- coef(thisLM);  names(thisCoef) <- c("(Intercept)", colnames(x)[i])
-              thisSE <-  summary(thisLM)$coefficients[,2]; names(thisSE) <- c("(Intercept)", colnames(x)[i])
+              thisLM <- lm(scale(y)~scale(x[,i])-1)
+              thisCoef <- coef(thisLM);  names(thisCoef) <- colnames(x)[i]
+              thisSE <-  summary(thisLM)$coefficients[,2]; names(thisSE) <-colnames(x)[i]
               thisR2 <- summary(thisLM)$r.squared
               return(list(coef=thisCoef, se=thisSE, R2=thisR2))
             }
@@ -244,7 +244,6 @@ setMethod(f="fitBMA",
             
             ##vector of bmk values for each model
             bfVec<-aaply(1:m,.margins=1,.fun=bayesFactor, .parallel=parallel)
-            head(r2s)
 
             ## Posterior probability of each model
             postProb <- matrix(bfVec/sum(bfVec), ncol=1)
@@ -253,8 +252,8 @@ setMethod(f="fitBMA",
             postProbcoefs <- t(modelMatrix)%*%postProb
 
             ##Get the names of the covariates whose coefficients are estimated for each model. 
-            coefMatrix <- sdMatrix <- cbind(rep(NA, m), modelMatrix)
-            colnames(coefMatrix) <- colnames(sdMatrix) <- c("(Intercept)", colnames(modelMatrix))
+            coefMatrix <- sdMatrix <- modelMatrix
+            colnames(coefMatrix) <- colnames(sdMatrix) <- colnames(modelMatrix)
             sdMatrix[modelMatrix==FALSE] <- coefMatrix[modelMatrix==FALSE] <- 0
 
             ## Make the coefficients list into a matrix
@@ -265,40 +264,34 @@ setMethod(f="fitBMA",
             for(i in 1:m){
               sdMatrix[i,names(standardErrors[[i]])] <- standardErrors[[i]]
             }
-
-
-            ## model space with constant
-            modelMatrixConst <- cbind(TRUE, modelMatrix)
-            colnames(modelMatrixConst) <- c("(Intercept)", colnames(modelMatrix))
             
             ## E(B)
             expB <- t(coefMatrix)%*%postProb
 
             ## E(B|B!=0)
-            expBcond <- rep(NA, p)
-            for(i in 1:p){
-              these <- (modelMatrixConst[,i]==TRUE)
+            expBcond <- rep(NA, p-1)
+            for(i in 1:(p-1)){
+              these <- (modelMatrix[,i]==TRUE)
               expBcond[i] <- (coefMatrix[these,i])%*% (postProb[these,])
             }
 
             ## se(B|B!=0)
-            condSE <- rep(NA, p)
-            for(i in 1:p){
-              these <- (modelMatrixConst[,i]==TRUE)
+            condSE <- rep(NA, p-1)
+            for(i in 1:(p-1)){
+              these <- (modelMatrix[,i]==TRUE)
               condSE[i] <- (sdMatrix[these,i])^2%*% (postProb[these,])
             }
             condSE <- sqrt(condSE)
 
             ## Pr(B>0|B!=0)
-            largerZero <- rep(NA, p)
-            for(i in 1:p){
-              these <- (modelMatrixConst[,i]==TRUE)
+            largerZero <- rep(NA, p-1)
+            for(i in 1:(p-1)){
+              these <- (modelMatrix[,i]==TRUE)
               largerZero[i] <- pnorm(0, coefMatrix[these,i], sdMatrix[these,i], lower.tail=FALSE) %*%(postProb[these,])
              }
              
-            ##Returned everything basically.
+            ##Returned everything.
             ##The documentation will need to be changed for the help files.
-            ##I think I got them all. Let me know if I missed any. 
             return(new("bma", 
                        x=x, 
                        y=y, 
