@@ -1,6 +1,7 @@
-x <- matrix(rnorm(80),ncol=8)
-colnames(x) <- paste("X",1:8,sep="")
-y <- rnorm(10)
+load("/Users/jaeheejung/Desktop/Spring 2014/Applied Statistical Programming/BMApack/BMApack/data/ABDagg.rda")
+
+x <- ABDagg[]
+y <- ABDagg[]
 
 g <- 3
 parallel <- TRUE
@@ -9,9 +10,9 @@ library(doMC)
 library(foreach)
 registerDoMC(cores=10)
 
-allNothing <- c("X1","X2")
-eitherOr <- c("X3","X4")
-always <- "X5"
+allNothing <- c()
+eitherOr <- c()
+always <- 
 
 ###########################################
 
