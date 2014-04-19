@@ -43,7 +43,7 @@ setMethod(f="fitBMA",
             varNames <- colnames(x)
 
             ##The modelSelect function returns the correct model configurations.  
-            modelSelect<-function(varNames, 
+            modelSelect<-function(varNames=colnames(x), 
                                     parallel,
                                     allNothing, 
                                     eitherOr,
@@ -51,14 +51,14 @@ setMethod(f="fitBMA",
                                     )
               { 
           
-  		        ##The conditionals object contains variables that are conditioned.
-  		        conditionals<-c(allNothing,always,eitherOr)
+  		        ##The restricteds object contains variables that are conditioned.
+  		        restricteds<-c(allNothing,always,eitherOr)
   		  
-  		        ##conditionalsIndex returns the index of the conditioned variables. 
+  		        ##restrictedsIndex returns the index of the conditioned variables. 
               ##This is necessary because we want to separate the conditioned ones 
               ##from the unconditioned variables.
-  		        conditionalsIndex <- which(varNames%in%conditionals)
-  		        unconditionals <- varNames[-conditionalsIndex]
+  		        restrictedsIndex <- which(varNames%in%restricteds)
+  		        unrestricteds <- varNames[-restrictedsIndex]
 
 		          ##The always condition is always included.
 		          alwaysCondition <- TRUE
@@ -68,86 +68,117 @@ setMethod(f="fitBMA",
 		          ##
               ##We will need to be able to take lists of allnothings eventually.
               ##
-		          ##The conditionalsList is all configurations for the conditioned variables combined.
-		          conditionalsList<-list(alwaysCondition=alwaysCondition, 
+		          ##The restrictedsList is all configurations for the conditioned variables combined.
+		          restrictedsList<-list(alwaysCondition=alwaysCondition, 
                                     allNothingCondition=allNothingCondition)
           
-              ##This is all conditionals that are not always or allNothing types
-  		        otherConditionals<-conditionals[-c(which(conditionals%in%always), 
-                                                which(conditionals%in%allNothing))]
+              ##This is all restricteds that are not always or allNothing types
+  		        otherrestricteds<-restricteds[-c(which(restricteds%in%always), 
+                                                which(restricteds%in%allNothing))]
           
               ##Make a list for the variables that are just going to be true false before they are 
               ##stripped away
-              otherConditionalsList<-list()
-               if(length(otherConditionals)!=0){
+              otherrestrictedsList<-list()
+               if(length(otherrestricteds)!=0){
 		          
-		          otherConditionalsList<-llply(1:length(otherConditionals),
-                                          function(i){otherConditionalsList[[i]]<-c(TRUE, FALSE)},
+		          otherrestrictedsList<-llply(1:length(otherrestricteds),
+                                          function(i){otherrestrictedsList[[i]]<-c(TRUE, FALSE)},
                                           .parallel=parallel)
                                           }
                                        
-                                           names(otherConditionalsList)<-otherConditionals
+                                           names(otherrestrictedsList)<-otherrestricteds
           
-              conditionalsList<-c(conditionalsList, otherConditionalsList)
+              restrictedsList<-c(restrictedsList, otherrestrictedsList)
 
               ##Expand grid on the conditioned variables.
-              conditionalsModels <- expand.grid(conditionalsList)
+              restrictedsModels <- expand.grid(restrictedsList)
 
-              conditionalsMatrix <-matrix(rep(FALSE),ncol=length(c(allNothing, always)), 
-                                      nrow=nrow(conditionalsModels))
+              restrictedsMatrix <-matrix(rep(FALSE),ncol=length(c(allNothing, always)), 
+                                      nrow=nrow(restrictedsModels))
 		      
-              colnames(conditionalsMatrix)<-c(allNothing, always)
+              colnames(restrictedsMatrix)<-c(allNothing, always)
 		    
-		          ##Put in the configurations for the alwaysCondition variables into conditionalsMatrix.
-		          conditionalsMatrix[,always]<-conditionalsModels[,"alwaysCondition"]
+		          ##Put in the configurations for the alwaysCondition variables into restrictedsMatrix.
+		          restrictedsMatrix[,always]<-restrictedsModels[,"alwaysCondition"]
 
 		          ##Do the same for the allNothingCondition.This should look the same 
               ##for each variable in a set of allNothings 
-		          conditionalsMatrix[,allNothing]<-conditionalsModels[,"allNothingCondition"]
+		          restrictedsMatrix[,allNothing]<-restrictedsModels[,"allNothingCondition"]
           
-              ##cbind that to the expandgrid results for any of the "otherConditionals" 
-              ##which is just conditionals that are not always or allNothing types.
+              ##cbind that to the expandgrid results for any of the "otherrestricteds" 
+              ##which is just restricteds that are not always or allNothing types.
               ##They vary as normal in expand grid and are stripped out later.
-              conditionalsMatrix<-cbind(conditionalsMatrix,conditionalsModels[,otherConditionals])
+              restrictedsMatrix<-cbind(restrictedsMatrix,restrictedsModels[,otherrestricteds])
         
               ###############################################################################
               ###############This is where we need to strip out "bad" models#################
               ###############BEFORE the temp variable is created for use with################
-              ###############the unconditionals##############################################
+              ###############the unrestricteds###############################################
               ###############################################################################
+              head(restrictedsMatrix)
+              ##This strips out models that fail the eitherOr test. 
+              ##Basically, it makes sure there is only one TRUE or all FALSES
+              ##I have the as.logical line in there because, for some reason,
+              ##it doesn't think the restrictedsMatrix is a logical.
+              
+  		        eitherOrTest<-function(x){length(which(x==TRUE))==1 | any(as.logical(x))==FALSE}##good models are true
+              
+              ##Cannot apply over the whole row or it will apply to always and allNothing too
+              ##so this indexes the matrix according only to those models in eitherOr
+              ##The unlist part is to get it as a vector that can be used for indexing the whole matrix.
+              eitherOrTestResults<-unlist(alply(restrictedsMatrix[eitherOr], 1, eitherOrTest))
+              
+              ##This indexes the matrix (and resaves it) by the test results .
+              ##So if the test came back TRUE, the model is kept. If the test is false,
+              ##it removes that row.
+              restrictedsMatrix<-restrictedsMatrix[eitherOrTestResults,]
+              
+              ##I have a few ideas on how the other tests can be incorporated. I think we should
+              ##index bad models out all at once. So perhaps we can run all the test results into a matrix
+              ##with a column for each test and a row for each model in modelMatrix 
+              ##(There would be one column for each eitherOr specified 
+              ##and one for each set of interactions or squared dependency types.)
+              ##Then, we have a vector used for indexing. This vector has a true if all the tests are 
+              ##passed (so all values in each test matrix row are true). If there is even one false,
+              ##the vector of results should return false. So, we end up with a vector with the a value
+              ##correspnding to each row of the matrix, then we can use it as I did above.
+              ##I'm open to anything, so whatever you want is fine. Delete this comment when we've 
+              ##figured this out.
+              
+              ######################End Tests################################################
           
   		        ##This is an empty list for the unconditioned variables that will be put into the expand.grid function.
-  		        unconditionalsList<-list()
+  		        unrestrictedsList<-list()
   		    
-  		        ##The unconditionalsList will not be created if all variables are conditioned. 
+  		        ##The unrestrictedsList will not be created if all variables are conditioned. 
   		        ##If there are unconditioned variables, however, the following code generates a 
   		        ##list that says TRUE and FALSE for each unconditioned variable.
-  		        if(length(unconditionals)!=0){
-                length(unconditionalsList)<-length(unconditionals)
-  		          unconditionalsList<-llply(1:length(unconditionals), 
-  		                                    function(i){unconditionalsList[[i]]<-c(TRUE, FALSE)},
+  		        if(length(unrestricteds)!=0){
+                length(unrestrictedsList)<-length(unrestricteds)
+  		          unrestrictedsList<-llply(1:length(unrestricteds), 
+  		                                    function(i){unrestrictedsList[[i]]<-c(TRUE, FALSE)},
   		                                    .parallel=parallel)
-  		          unconditionalsList<-c(unconditionalsList, list(temp=1:nrow(conditionalsMatrix)))
-                names(unconditionalsList)<-c(unconditionals, "temp")
+  		          unrestrictedsList<-c(unrestrictedsList, list(temp=1:nrow(restrictedsMatrix)))
+                names(unrestrictedsList)<-c(unrestricteds, "temp")
   		        }
   
   		        ##Expand grid on the unconditioned variables.
-  		        unconditionalsMatrix <- expand.grid(unconditionalsList)
+  		        unrestrictedsMatrix <- expand.grid(unrestrictedsList)
           
               ##This function matches the models with a particular temp value to a row 
-              ##in the conditionalsMatrix 
-              ##Thus, for each model where temp==1 in unconditionals, we match it to the first row
-              ##of the conditionals. Same with 2 and so on all the way through the number of rows
-              ##in the unconditionals matrix (number of those type of models.
-              bindTogether<-function(i){cbind(unconditionalsMatrix[unconditionalsMatrix$temp==i,], conditionalsMatrix[i,])}
+              ##in the restrictedsMatrix 
+              ##Thus, for each model where temp==1 in unrestricteds, we match it to the first row
+              ##of the restricteds. Same with 2 and so on all the way through the number of rows
+              ##in the unrestricteds matrix (number of those type of models.
+              bindTogether<-function(i){cbind(unrestrictedsMatrix[unrestrictedsMatrix$temp==i,], restrictedsMatrix[i,])}
           
               ##Here, I'm llplying over all of the rows of the conditioned variable combination matrix
-              ##This is because temp in the unconditional matrix takes on a new value for each model 
+              ##This is because temp in the unrestricted matrix takes on a new value for each model 
               ##in the conditioned matrix.So this matches temp==1 in unconditioned to row 1 
               ##of the conditioned matrix 
               ##lply returns a list and laply doesn't work in this context, so I use do.call with rbind
               ##to get a matrix here.
-              modelMatrix<-do.call("rbind",llply(1:nrow(conditionalsMatrix), bindTogether))
+              modelMatrix<-do.call("rbind",llply(1:nrow(restrictedsMatrix), bindTogether))
           
               ##Finally, we remove temp. This makes it so modelMatrix is exactly the same but without
               ##the temp variable.
@@ -236,6 +267,7 @@ setMethod(f="fitBMA",
 
             ## Calculate the number of variabels in each model
             numberVars <- rowSums(modelMatrix)
+
             ## Some useful constants
             n <- length(y)
             m <- nrow(modelMatrix) # number of total models
