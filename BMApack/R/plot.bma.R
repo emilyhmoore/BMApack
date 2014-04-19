@@ -117,7 +117,9 @@ setMethod(f="plot", signature="bma",
                    
                    heightMatrix[[i]], type="l", xlab="", ylab="", main=paste("Variable",i),
                    
-                   segments(0,0,0,exclusion[i], lwd=3))       
+                   ylim=c(0, max(exclusion[i], max(heightMatrix[[i]]))))
+              
+              segments(0,0,0,exclusion[i], lwd=3)
             }
             
             l_ply(1:length(heightMatrix), coef.plot)
