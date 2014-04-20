@@ -10,9 +10,13 @@
 }
 \value{
 Prints summaries of coefficients and posterior model odds
-and returns list \item{exp.vals}{A vector of expected
-coefficient values} \item{coefprobs}{A vector of
-probabilities that the coefficient is non-zero}
+and returns list \item{expB}{Expected values of
+coefficients} \item{condSE}{Standard error of coefficients
+conditional on the variable being included}
+\item{postProbcoefs}{Posterior probability that the
+coefficient is included} \item{largerZero}{Conditional
+posterior probability that the coefficient is larger than
+zero}
 }
 \description{
 Summarizes bma objects as returned by fitBMA

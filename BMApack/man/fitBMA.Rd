@@ -8,25 +8,43 @@ fitBMA(x, y, g = 3, parallel = TRUE, allNothing = NULL, eitherOr = NULL,
 \arguments{
   \item{x:}{A numeric matrix of covariates}
 
-  \item{y:}{A numeric vector of the same length as the
-  number of rows in x.}
+  \item{y:}{A numeric vector of the dependent variable}
 
-  \item{g:}{A value for g.}
+  \item{g:}{A value for the hyper-prior g}
 
   \item{parallel:}{runs in parallel if TRUE}
+
+  \item{allNothing:}{a vector of the names of covariates
+  that should all be included or none should be included}
+
+  \item{eitherOr:}{a vector of the names of covariates
+  among which only one should be included or none should be
+  included}
+
+  \item{always:}{a vector of the names of covariates that
+  should always be included}
 }
 \value{
-An bma class object with following slots:
-\item{combo.coef}{A list of coefficients from each
-regression} \item{combo.fit}{Vector of R-squared Values}
-\item{bmk}{Vector of posterior probability odds}
-\item{exp.vals}{A vector of expected coefficient values}
-\item{coefprobs}{A vector of probabilities that the
-coefficient is non-zero}
+An bma class object with the following slots: \item{x}{A
+matrix of covariates} \item{y}{A vector of the dependent
+variable} \item{coefs}{Coefficients in all models}
+\item{standardErrors}{Standard errors of coefficients in
+all models} \item{r2s}{R squared values for all models}
+\item{postProb}{Posterior probability of each model}
+\item{postProbcoefs}{Posterior probability that the
+coefficient is included} \item{bfVec}{Bayes factor of each
+model} \item{expB}{Expected values of coefficients}
+\item{expBcond}{Expected values of coefficients conditional
+on the variable being included}
+\item{largerZero}{Conditional posterior probability that
+the coefficient is larger than zero} \item{condSE}{Standard
+error of coefficients conditional on the variable being
+included} \item{coefMatrix}{Matrix of coefficients}
+\item{sdMatrix}{Matrix of standard errors}
 }
 \description{
-Runs regression on all possible combos of covariates and
-returns coefs, R2, and BMA stats
+Runs regression on all possible combinations of covariates
+given the restrictions specified by the user
 }
 \examples{
 x1<-rnorm(500)

@@ -1,18 +1,30 @@
 #' fitBMA Function
 #'
-#' Runs regression on all possible combos of covariates and returns coefs, R2, and BMA stats
+#' Runs regression on all possible combinations of covariates given the restrictions specified by the user
 #'
 #' @param x: A numeric matrix of covariates
-#' @param y: A numeric vector of the same length as the number of rows in x.
-#' @param g: A value for g. 
+#' @param y: A numeric vector of the dependent variable
+#' @param g: A value for the hyper-prior g
 #' @param parallel: runs in parallel if TRUE
+#' @param allNothing: a vector of the names of covariates that should all be included or none should be included
+#' @param eitherOr: a vector of the names of covariates among which only one should be included or none should be included
+#' @param always: a vector of the names of covariates that should always be included
 #'
-#' @return An bma class object with following slots: 
-#'  \item{combo.coef}{A list of coefficients from each regression}
-#'  \item{combo.fit}{Vector of R-squared Values} 
-#'  \item{bmk}{Vector of posterior probability odds}
-#'  \item{exp.vals}{A vector of expected coefficient values}
-#'  \item{coefprobs}{A vector of probabilities that the coefficient is non-zero}
+#' @return An bma class object with the following slots: 
+#'  \item{x}{A matrix of covariates}
+#'  \item{y}{A vector of the dependent variable} 
+#'  \item{coefs}{Coefficients in all models}
+#'  \item{standardErrors}{Standard errors of coefficients in all models}
+#'  \item{r2s}{R squared values for all models}
+#'  \item{postProb}{Posterior probability of each model}
+#'  \item{postProbcoefs}{Posterior probability that the coefficient is included}
+#'  \item{bfVec}{Bayes factor of each model}
+#'  \item{expB}{Expected values of coefficients}
+#'  \item{expBcond}{Expected values of coefficients conditional on the variable being included}
+#'  \item{largerZero}{Conditional posterior probability that the coefficient is larger than zero}
+#'  \item{condSE}{Standard error of coefficients conditional on the variable being included}
+#'  \item{coefMatrix}{Matrix of coefficients}
+#'  \item{sdMatrix}{Matrix of standard errors}
 #' @author Jacob Montgomery, Dino Hadzic, Jae Hee Jung, and Emily Moore
 #' @examples
 #' 
@@ -343,8 +355,4 @@ setMethod(f="fitBMA",
           }#close function definition
           ) ##Close method
 
-x=matrix(rnorm(1000), ncol=10)
-colnames(x)<-paste("var", 1:10)
-y<-5*x[,1]+2*x[,2]+rnorm(100)
-trial<-fitBMA(x=x,y=y,allNothing=c("var1", "var2"), always="var 3", eitherOr=c("var 4", "var 5"))
 
