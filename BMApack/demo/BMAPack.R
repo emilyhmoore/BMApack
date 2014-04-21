@@ -7,13 +7,6 @@ always <- c("X9","X10")
 conditionals <- list(c("X11","X12"),c("X13","X14"))
 conditionedOnTheseVariables <- list(c("X15","X16"),c("X17","X18"))
 
-g <- 3
-parallel <- TRUE
-library(multicore)
-library(doMC)
-library(foreach)
-registerDoMC(cores=2)
-
 BMAObject <- fitBMA(x, y, g, parallel, allNothing, eitherOr, always,conditionals,conditionedOnTheseVariables)
 
 BMAObject
