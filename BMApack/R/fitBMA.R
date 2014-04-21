@@ -54,9 +54,6 @@ setMethod(f="fitBMA",
                               )
         {
           
-            if(length(conditionals)!=length(conditionedOnTheseVariables)){stop("conditionals and
-                                                                               conditionedOnTheseVariables
-                                                                               must be the same length!")}
             ##Extract the names of the independent variables, which will be used in later functions.
     
             ##The modelSelect function returns the correct model configurations.  
@@ -405,16 +402,16 @@ setMethod(f="fitBMA",
           }#close function definition
           ) ##Close method
 
-#x=matrix(rnorm(1500), ncol=15)
-#colnames(x)<-paste("var", 1:15)
-#y<-5*x[,1]+2*x[,2]+rnorm(100)
+x=matrix(rnorm(1500), ncol=15)
+colnames(x)<-paste("var", 1:15)
+y<-5*x[,1]+2*x[,2]+rnorm(100)
 
-##Try out model select.
-#allNothing=list(c("var 1", "var 2"),c("var 6", "var 7"))
-#always="var 3" 
-#eitherOr=list(c("var 4", "var 5"), c("var 8", "var 9")))
-#conditionals=list(c("var 10"),c("var 12"))
-#conditionedOnTheseVariables<-list(c("var 11"), c("var 13", "var 14"))
+modelSelect(varNames=colnames(x), parallel=FALSE, 
+       allNothing=list(c("var 1", "var 2"),c("var 6", "var 7")), 
+       always="var 3", 
+       eitherOr=list(c("var 4", "var 5"), c("var 8", "var 9")),
+       conditionals=list(c("var 10"),c("var 12")),
+       conditionedOnTheseVariables<-list(c("var 11"), c("var 13", "var 14")))
 
 #trial<-(modelSelect(varNames=colnames(x), parallel=FALSE, allNothing=allNothing, always=always, eitherOr=eitherOr, conditionals=conditionals, conditionedOnTheseVariables=conditionedOnTheseVariables))
 
