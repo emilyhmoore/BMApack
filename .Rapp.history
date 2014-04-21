@@ -1,37 +1,3 @@
-eitherOrTestResult
-eitherOrTestResults <- replicate(length(eitherOr),list())#
-              for(i in 1:length(eitherOr)){#
-              	eitherOrStripIndex <- unlist(alply(restrictedsMatrix[eitherOr[[i]]], 1, eitherOrTest))#
-              	eitherOrTestResults <- c(eitherOrTestResults,eitherOrStripIndex)#
-              	}
-eitherOrTestResults
-unlist(alply(restrictedsMatrix[eitherOr[[1]]], 1, eitherOrTest))
-eitherOrTestResults <- NULL#
-              for(i in 1:length(eitherOr)){#
-              	eitherOrStripIndex <- unlist(alply(restrictedsMatrix[eitherOr[[i]]], 1, eitherOrTest))#
-              	eitherOrTestResults <- list(eitherOrTestResults,eitherOrStripIndex)#
-              	}
-eitherOrTestResults
-eitherOrTestResults <- NULL#
-              for(i in 1:length(eitherOr)){#
-              	eitherOrStripIndex <- unlist(alply(restrictedsMatrix[eitherOr[[i]]], 1, eitherOrTest))#
-              	eitherOrTestResults <- c(eitherOrTestResults,eitherOrStripIndex)#
-              	}
-eitherOrTestResults
-?split
-eitherOrTestResults <- NULL#
-              for(i in 1:length(eitherOr)){#
-              	eitherOrStripIndex <- unlist(alply(restrictedsMatrix[eitherOr[[i]]], 1, eitherOrTest))#
-              	eitherOrTestResults <- list(eitherOrTestResults,eitherOrStripIndex)#
-              	}
-eitherOrTestResults
-eitherOrTestResults[[-1]]
-eitherOrTestResults <- NULL#
-              for(i in 1:length(eitherOr)){#
-              	eitherOrStripIndex <- unlist(alply(restrictedsMatrix[eitherOr[[i]]], 1, eitherOrTest))#
-              	eitherOrTestResults <- c(eitherOrTestResults,eitherOrStripIndex)#
-              	}
-eitherOrTestResults
 split(eitherOrTestResults)
 restrictedsMatrix
 nrow(restrictedsMatrix)
@@ -862,3 +828,27 @@ fitBMA(x,y,g,parallel,allNothing,eitherOr,always,conditionals,conditionedOnThese
 a <- fitBMA(x,y,g,parallel,allNothing,eitherOr,always,conditionals,conditionedOnTheseVariables)
 summary(a)
 plot(a)
+library(devtools)
+library(roxygen2)
+g <- 3#
+parallel <- TRUE#
+library(multicore)#
+library(doMC)#
+library(foreach)#
+registerDoMC(cores=2)
+current.code <- as.package("BMAPack")
+load_all(current.code)
+document(current.code)
+demo(BMAPack)
+library(devtools)
+library(roxygen2)
+g <- 3#
+parallel <- TRUE#
+library(multicore)#
+library(doMC)#
+library(foreach)#
+registerDoMC(cores=2)
+current.code <- as.package("BMAPack")
+load_all(current.code)
+document(current.code)
+demo(BMAPack)
