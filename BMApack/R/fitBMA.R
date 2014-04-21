@@ -37,7 +37,8 @@
 #' @export
 
 setGeneric(name="fitBMA",
-           def=function(x, y, g=3, parallel=TRUE,allNothing=NULL, eitherOr=NULL,always=NULL, conditionals=NULL, conditionedOnTheseVariables=NULL)
+           def=function(x, y, g=3, parallel=TRUE,allNothing=NULL, eitherOr=NULL, always=NULL, 
+                        conditionals=NULL, conditionedOnTheseVariables=NULL)
            {standardGeneric("fitBMA")}
            ) 
 
@@ -404,19 +405,19 @@ setMethod(f="fitBMA",
           }#close function definition
           ) ##Close method
 
-x=matrix(rnorm(1500), ncol=15)
-colnames(x)<-paste("var", 1:15)
-y<-5*x[,1]+2*x[,2]+rnorm(100)
+#x=matrix(rnorm(1500), ncol=15)
+#colnames(x)<-paste("var", 1:15)
+#y<-5*x[,1]+2*x[,2]+rnorm(100)
 
 ##Try out model select.
-allNothing=list(c("var 1", "var 2"),c("var 6", "var 7"))
-always="var 3", 
-eitherOr=list(c("var 4", "var 5"), c("var 8", "var 9")))
-conditionals=list(c("var 10"),c("var 12"))
-conditionedOnTheseVariables<-list(c("var 11"), c("var 13", "var 14"))
+#allNothing=list(c("var 1", "var 2"),c("var 6", "var 7"))
+#always="var 3" 
+#eitherOr=list(c("var 4", "var 5"), c("var 8", "var 9")))
+#conditionals=list(c("var 10"),c("var 12"))
+#conditionedOnTheseVariables<-list(c("var 11"), c("var 13", "var 14"))
 
-trial<-(modelSelect(varNames=colnames(x), parallel=FALSE, allNothing=allNothing, always=always, eitherOr=eitherOr, conditionals=conditionals, conditionedOnTheseVariables=conditionedOnTheseVariables))
+#trial<-(modelSelect(varNames=colnames(x), parallel=FALSE, allNothing=allNothing, always=always, eitherOr=eitherOr, conditionals=conditionals, conditionedOnTheseVariables=conditionedOnTheseVariables))
 
 #Normally, 15 variables would be 2^15=32,768 models. But this spec knocks it down to 1000. Much better!
 
-tail(trial, 100)
+#tail(trial, 100)
