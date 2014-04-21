@@ -56,16 +56,16 @@ setMethod(f="fitBMA",
 
             ##The modelSelect function returns the correct model configurations.  
             modelSelect<-function(varNames=colnames(x), 
-                                    parallel,
+                                    parallel=FALSE,
                                     allNothing, 
                                     eitherOr,
                                     always
                                     )
               { 
-          
+
   		        ##The restricteds object contains variables that are conditioned.
   		        restricteds<-c(unlist(allNothing),always,unlist(eitherOr))
-  		  
+
   		        ##restrictedsIndex returns the index of the conditioned variables. 
               ##This is necessary because we want to separate the conditioned ones 
               ##from the unconditioned variables.
@@ -76,7 +76,7 @@ setMethod(f="fitBMA",
 		          alwaysCondition <- TRUE
 		  
 		          ##The allNothing condition is either included or not included.
-		          allNothingCondition<-          replicate(length(allNothing),list(c(TRUE, FALSE)))
+		          allNothingCondition<-replicate(length(allNothing),list(c(TRUE, FALSE)))
 		         
 		          ##The restrictedsList is all configurations for the conditioned variables combined.
 		          restrictedsList<-c(alwaysCondition=alwaysCondition, 
@@ -93,17 +93,17 @@ setMethod(f="fitBMA",
               ##stripped away
               otherrestrictedsList<-list()
                if(length(otherrestricteds)!=0){
-		          
+
 		          otherrestrictedsList<-llply(1:length(otherrestricteds),
                                           function(i){otherrestrictedsList[[i]]<-c(TRUE, FALSE)},
                                           .parallel=parallel)
                                           }
                                        
-                                           names(otherrestrictedsList)<-otherrestricteds
+              names(otherrestrictedsList)<-otherrestricteds
           
               restrictedsList<-c(restrictedsList, otherrestrictedsList)
 
-              ##Expand grid on the conditioned variables.
+              ##Expand grid on the restricted variables.
               restrictedsModels <- expand.grid(restrictedsList)
 
 			
@@ -115,12 +115,12 @@ setMethod(f="fitBMA",
 		          ##Put in the configurations for the alwaysCondition variables into restrictedsMatrix.
 		          restrictedsMatrix[,always]<-restrictedsModels[,"alwaysCondition"]
 
-		          ##Do the same for the allNothingCondition. Since the allNothingCondition is a list, each list should be considered separately.
+		          ##Do the same for the allNothingCondition. Since the allNothingCondition is a list, 
+              ##each list should be considered separately.
 	          
-	for(i in 1:length(allNothing)){
-		restrictedsMatrix[,allNothing[[i]]]<-restrictedsModels[,allNothingConditionNames[i]]
-		
-		}
+	            for(i in 1:length(allNothing)){
+		            restrictedsMatrix[,allNothing[[i]]]<-restrictedsModels[,allNothingConditionNames[i]]
+		          }
           
               ##cbind that to the expandgrid results for any of the "otherrestricteds" 
               ##which is just restricteds that are not always or allNothing types.
@@ -139,7 +139,7 @@ setMethod(f="fitBMA",
               ##it doesn't think the restrictedsMatrix is a logical.
               
   		        eitherOrTest<-function(x){length(which(x==TRUE))==1 | any(as.logical(x))==FALSE}##good models are true
-              
+
               ##Cannot apply over the whole row or it will apply to always and allNothing too
               ##so this indexes the matrix according only to those models in eitherOr
               ##The unlist part is to get it as a vector that can be used for indexing the whole matrix.
@@ -147,9 +147,11 @@ setMethod(f="fitBMA",
               for(i in 1:length(eitherOr)){
               	eitherOrStripIndex <- unlist(alply(restrictedsMatrix[eitherOr[[i]]], 1, eitherOrTest))
               	eitherOrTestResults <- c(eitherOrTestResults,eitherOrStripIndex)
-              	}
+              }
               
-              ##Since eitherOrTestResults is a vector, transform it into a matrix with rows indicating each set of the eitherOr condition and rows indicating model numbers. The transformation into a matrix is for convenience in the next part. 
+              ##Since eitherOrTestResults is a vector, transform it into a matrix with rows 
+              ##indicating each set of the eitherOr condition and rows indicating model numbers. 
+              ##The transformation into a matrix is for convenience in the next part. 
               eitherOrTestResults <- matrix(eitherOrTestResults,ncol=length(eitherOr),byrow=FALSE)
               
               ##Given the matrix of eitherOrTestResults, create a vector whose element is TRUE if all eitherOr conditions are TRUE. Otherwise, it is FALSE. This is done because if the user specifies more than one eitherOr condition, models for which the conditions hold for all eitherOr conditions should be calculated.
@@ -164,27 +166,16 @@ setMethod(f="fitBMA",
               ##it removes that row.
               restrictedsMatrix<-restrictedsMatrix[eitherOrTestResultsCombined,]
               
-              ##I have a few ideas on how the other tests can be incorporated. I think we should
-              ##index bad models out all at once. So perhaps we can run all the test results into a matrix
-              ##with a column for each test and a row for each model in modelMatrix 
-              ##(There would be one column for each eitherOr specified 
-              ##and one for each set of interactions or squared dependency types.)
-              ##Then, we have a vector used for indexing. This vector has a true if all the tests are 
-              ##passed (so all values in each test matrix row are true). If there is even one false,
-              ##the vector of results should return false. So, we end up with a vector with the a value
-              ##correspnding to each row of the matrix, then we can use it as I did above.
-              ##I'm open to anything, so whatever you want is fine. Delete this comment when we've 
-              ##figured this out.
-              
               ######################End Tests################################################
           
           
-          ##This function matches the models with a particular temp value to a row 
+              ##This function matches the models with a particular temp value to a row 
               ##in the restrictedsMatrix 
               ##Thus, for each model where temp==1 in unrestricteds, we match it to the first row
               ##of the restricteds. Same with 2 and so on all the way through the number of rows
               ##in the unrestricteds matrix (number of those type of models.
-              bindTogether<-function(i){cbind(unrestrictedsMatrix[unrestrictedsMatrix$temp==i,], restrictedsMatrix[i,])}
+              bindTogether<-function(i){cbind(unrestrictedsMatrix[unrestrictedsMatrix$temp==i,], 
+                                              restrictedsMatrix[i,])}
               
   		        ##This is an empty list for the unconditioned variables that will be put into the expand.grid function.
   		        unrestrictedsList<-list()
@@ -193,8 +184,8 @@ setMethod(f="fitBMA",
   		        if(length(unrestricteds)!=0){
                 
                 ##The unrestrictedsList will not be created if all variables are conditioned. 
-  		        ##If there are unconditioned variables, however, the following code generates a 
-  		        ##list that says TRUE and FALSE for each unconditioned variable.
+  		          ##If there are unconditioned variables, however, the following code generates a 
+  		          ##list that says TRUE and FALSE for each unconditioned variable.
                 length(unrestrictedsList)<-length(unrestricteds)
   		          unrestrictedsList<-llply(1:length(unrestricteds), 
   		                                    function(i){unrestrictedsList[[i]]<-c(TRUE, FALSE)},
@@ -202,35 +193,36 @@ setMethod(f="fitBMA",
   		          unrestrictedsList<-c(unrestrictedsList, list(temp=1:nrow(restrictedsMatrix)))
                 names(unrestrictedsList)<-c(unrestricteds, "temp")
                 
-                   ##Expand grid on the unconditioned variables.
+                ##Expand grid on the unconditioned variables.
                 unrestrictedsMatrix <- expand.grid(unrestrictedsList)
                 
-                  ##Here, I'm llplying over all of the rows of the conditioned variable combination matrix
-              ##This is because temp in the unrestricted matrix takes on a new value for each model 
-              ##in the conditioned matrix.So this matches temp==1 in unconditioned to row 1 
-              ##of the conditioned matrix 
-              ##lply returns a list and laply doesn't work in this context, so I use do.call with rbind
-              ##to get a matrix here.
-              modelMatrix<-do.call("rbind",llply(1:nrow(restrictedsMatrix), bindTogether))
+                ##Here, I'm llplying over all of the rows of the conditioned variable combination matrix
+                ##This is because temp in the unrestricted matrix takes on a new value for each model 
+                ##in the conditioned matrix.So this matches temp==1 in unconditioned to row 1 
+                ##of the conditioned matrix 
+                ##lply returns a list and laply doesn't work in this context, so I use do.call with rbind
+                ##to get a matrix here.
+                modelMatrix<-do.call("rbind",llply(1:nrow(restrictedsMatrix), bindTogether))
               
-               ##Finally, we remove temp. This makes it so modelMatrix is exactly the same but without
-              ##the temp variable.
-              modelMatrix$temp<-NULL
+                ##Finally, we remove temp. This makes it so modelMatrix is exactly the same but without
+                ##the temp variable.
+                modelMatrix$temp<-NULL
               
-              ##This ensures that the variables go back into the order they originally were in for the input
-              ##matrix of fitbma. This is essential because they can easily get out of order in the
-              ##conditioning process.
-              modelMatrix<-modelMatrix[colnames(x)]
+                ##This ensures that the variables go back into the order they originally were in for the input
+                ##matrix of fitbma. This is essential because they can easily get out of order in the
+                ##conditioning process.
+                modelMatrix<-modelMatrix[colnames(x)]
               
   		        }else{
   		        	modelMatrix <- restrictedsMatrix
   		        	
   		        	##This ensures that the variables go back into the order they originally were in for the input
-              ##matrix of fitbma. This is essential because they can easily get out of order in the
-              ##conditioning process.
-              modelMatrix<-modelMatrix[colnames(x)]
+                ##matrix of fitbma. This is essential because they can easily get out of order in the
+                ##conditioning process.
+                modelMatrix<-modelMatrix[colnames(x)]
   		        }
-  
+              eitherOr
+  head(modelMatrix, 50)
               return(modelMatrix)
             }##close modelSelect function
 
@@ -376,3 +368,10 @@ setMethod(f="fitBMA",
 
           }#close function definition
           ) ##Close method
+
+x=matrix(rnorm(1000), ncol=10)
+colnames(x)<-paste("var", 1:10)
+y<-5*x[,1]+2*x[,2]+rnorm(100)
+trial<-fitBMA(x=x,y=y,allNothing=list(c("var 1", "var 2"),c("var 6", "var 7")), always="var 3", eitherOr=list(c("var 4", "var 5"), c("var 8", "var 9")))
+
+
