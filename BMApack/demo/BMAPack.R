@@ -6,6 +6,8 @@ eitherOr <- list(c("X5","X6"),c("X7","X8"))
 always <- c("X9","X10")
 conditionals <- list(c("X11","X12"),c("X13","X14"))
 conditionedOnTheseVariables <- list(c("X15","X16"),c("X17","X18"))
+parallel <- FALSE
+g <- 3
 
 BMAObject <- fitBMA(x, y, g, parallel, allNothing, eitherOr, always,conditionals,conditionedOnTheseVariables)
 
