@@ -64,8 +64,12 @@ setMethod(f="fitBMA",
               { 
 
   		        ##The restricteds object contains variables that are conditioned.
-  		        restricteds<-c(unlist(allNothing),always,unlist(eitherOr))
-
+  		        restricteds<-c(unlist(allNothing),
+                             always,
+                             unlist(eitherOr), 
+                             unlist(conditionals), 
+                             unlist(conditionedOnTheseVariables))
+              
   		        ##restrictedsIndex returns the index of the conditioned variables. 
               ##This is necessary because we want to separate the conditioned ones 
               ##from the unconditioned variables.
@@ -74,10 +78,10 @@ setMethod(f="fitBMA",
 
 		          ##The always condition is always included.
 		          alwaysCondition <- TRUE
-		  
+		          
 		          ##The allNothing condition is either included or not included.
 		          allNothingCondition<-replicate(length(allNothing),list(c(TRUE, FALSE)))
-		         
+		          
 		          ##The restrictedsList is all configurations for the conditioned variables combined.
 		          restrictedsList<-c(alwaysCondition=alwaysCondition, 
                                     allNothingCondition=allNothingCondition)
@@ -138,8 +142,13 @@ setMethod(f="fitBMA",
               ##The as.logical line in there because, for some reason,
               ##it doesn't think the restrictedsMatrix is a logical.
               
-  		        eitherOrTest<-function(x){length(which(x==TRUE))==1 | any(as.logical(x))==FALSE}##good models are true
-
+              ##good models are TRUE
+  		        eitherOrTest<-function(x){length(which(x==TRUE))==1 | any(as.logical(x))==FALSE}
+              
+              ##asks if the first value is FALSE. If it is, the model gets a TRUE
+              ##if the first value is TRUE, then the model only gets a TRUE if everything is TRUE.
+              conditionalsTest<-function(x){x[1]==FALSE | all(as.logical(x))==TRUE}
+              
               ##Cannot apply over the whole row or it will apply to always and allNothing too
               ##so this indexes the matrix according only to those models in eitherOr
               ##The unlist part is to get it as a vector that can be used for indexing the whole matrix.
@@ -149,23 +158,42 @@ setMethod(f="fitBMA",
               	eitherOrTestResults <- c(eitherOrTestResults,eitherOrStripIndex)
               }
               
+              conditionalsTestResults<-NULL
+              for (i in 1:length(conditionals)){
+                conditionalsStripIndex<-unlist(
+                  alply(
+                    ##This nasty piece is to bind together the conditionals with the variables
+                    ##on which they're dependent. There should be a way to do this as a list
+                    ##of lists instead, which would be more parsimonious. 
+                    restrictedsMatrix[,cbind(conditionals[[i]], conditionedOnTheseVariables[[i]])],
+                                                     1,conditionalsTest)##apply over rows the fun. conditionalsTest
+                  )
+                conditionalsTestResults<-c(conditionalsTestResults, conditionalsStripIndex)
+              }
+  		        
               ##Since eitherOrTestResults is a vector, transform it into a matrix with rows 
               ##indicating each set of the eitherOr condition and rows indicating model numbers. 
               ##The transformation into a matrix is for convenience in the next part. 
               eitherOrTestResults <- matrix(eitherOrTestResults,ncol=length(eitherOr),byrow=FALSE)
               
-              ##Given the matrix of eitherOrTestResults, create a vector whose element is TRUE if all eitherOr conditions are TRUE. Otherwise, it is FALSE. This is done because if the user specifies more than one eitherOr condition, models for which the conditions hold for all eitherOr conditions should be calculated.
-              eitherOrTestResultsCombined <- aaply(eitherOrTestResults,1,
+              conditionalsTestResults<-matrix(conditionalsTestResults, ncol=length(conditionals), byrow=FALSE)
+              
+              ##Given the matrix of eitherOrTestResults, create a vector whose element is 
+              ##TRUE if all eitherOr conditions are TRUE. Otherwise, it is FALSE. This is 
+              ##done because if the user specifies more than one eitherOr condition, models 
+              ##for which the conditions hold for all eitherOr conditions should be calculated.
+              TestResultsCombined <- aaply(cbind(eitherOrTestResults,conditionalsTestResults),1,
               function(x){
               	ifelse(all(x),TRUE,FALSE)
               })
               
-    
+              
               ##This indexes the matrix (and resaves it) by the test results .
               ##So if the test came back TRUE, the model is kept. If the test is false,
               ##it removes that row.
-              restrictedsMatrix<-restrictedsMatrix[eitherOrTestResultsCombined,]
+              restrictedsMatrix<-restrictedsMatrix[TestResultsCombined,]
               
+              tail(restrictedsMatrix,100)
               ######################End Tests################################################
           
           
@@ -177,7 +205,8 @@ setMethod(f="fitBMA",
               bindTogether<-function(i){cbind(unrestrictedsMatrix[unrestrictedsMatrix$temp==i,], 
                                               restrictedsMatrix[i,])}
               
-  		        ##This is an empty list for the unconditioned variables that will be put into the expand.grid function.
+  		        ##This is an empty list for the unconditioned variables that will be put into the 
+              ##expand.grid function.
   		        unrestrictedsList<-list()
   		    
   		    
@@ -369,9 +398,11 @@ setMethod(f="fitBMA",
           }#close function definition
           ) ##Close method
 
-x=matrix(rnorm(1000), ncol=10)
-colnames(x)<-paste("var", 1:10)
+x=matrix(rnorm(1500), ncol=15)
+colnames(x)<-paste("var", 1:15)
 y<-5*x[,1]+2*x[,2]+rnorm(100)
 trial<-fitBMA(x=x,y=y,allNothing=list(c("var 1", "var 2"),c("var 6", "var 7")), always="var 3", eitherOr=list(c("var 4", "var 5"), c("var 8", "var 9")))
 
+conditionals=list(c("var 10"),c("var 12"))
+conditionedOnTheseVariables<-list(c("var 11"), c("var 13", "var 14"))
 
