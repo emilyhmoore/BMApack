@@ -47,10 +47,15 @@ setMethod(f="fitBMA",
                               parallel=FALSE,
                               allNothing=NULL, 
                               eitherOr=NULL,
-                              always=NULL
+                              always=NULL,
+                              conditionals=NULL,
+                              conditionedOnTheseVariables=NULL
                               )
         {
           
+            if(length(conditionals)!=length(conditionedOnTheseVariables)){stop("conditionals and
+                                                                               conditionedOnTheseVariables
+                                                                               must be the same length!")}
             ##Extract the names of the independent variables, which will be used in later functions.
             varNames <- colnames(x)
 
@@ -251,7 +256,7 @@ setMethod(f="fitBMA",
                 modelMatrix<-modelMatrix[colnames(x)]
   		        }
               eitherOr
-  head(modelMatrix, 50)
+
               return(modelMatrix)
             }##close modelSelect function
 
@@ -305,7 +310,9 @@ setMethod(f="fitBMA",
                                        always=always, 
                                        allNothing=allNothing, 
                                        eitherOr=eitherOr,
-                                       parallel=parallel)
+                                       parallel=parallel,
+                                       conditionals=conditionals,
+                                       conditionedOnTheseVariables=conditionedOnTheseVariables)
 		  
 			      ##Convert modelMatrix, which is actually a data frame, to a matrix.
 			      modelMatrix <- as.matrix(modelMatrix)
