@@ -1,19 +1,21 @@
-#' plot.bma Function
-#'
-#' Plots bma objects as returned by fitBMA.
-#' Plots the density of the normal distribution centered at expected coefficient and with a standard 
-#' deviation equal to the weighted standard error of variable.
-#' Also plots line segment centered at zero indicating probability that coefficient is zero.
-#' Will need to scroll through the plots, each corresponding to a particular variable.
+#' plot.bma 
+#' 
+#' Generates posterior coefficient plots which include the posterior probability of the 
+#' coefficient. Included on the plot is a vertical line denoting the probability that the 
+#' variable is not in the model. User will need to scroll through the various plots that
+#' are generated, each corresponding to a particular variable. 
 #'
 #' @author Jacob Montgomery, Dino Hadzic, Jae Hee Jung, and Emily Moore
 #' @examples
 #' 
-#' data<-matrix(rnorm(1000), ncol=10)
-#' colnames(data)<-c(paste("x", 1:10, sep=""))
-#' datay<-5*data[,2]+3*data[,3]+rnorm(100)
-#' trial<-(fitBMA(x=data, y=datay, g=3, parallel=FALSE)) 
-#' plot(trial)
+#' x <- matrix(rnorm(80),ncol=8)
+#' colnames(x) <- paste("X",1:8,sep="")
+#' y <- rnorm(10)
+#' allNothing <- c("X1","X2")
+#' eitherOr <- NULL
+#' always <- c("X3","X4")
+#' BMAobject <- fitBMA(x=x, y=y, allNothing=allNothing, eitherOr=eitherOr, always=always)
+#' plot(BMAobject)
 #' @rdname plot.bma
 #' @export
 #' 
