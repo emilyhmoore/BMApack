@@ -13,7 +13,7 @@ parallel <- TRUE
 library(multicore)
 library(doMC)
 library(foreach)
-registerDoMC(cores=20)
+registerDoMC(cores=2)
 
 allNothing <- list(c("eqada2","new.inter","pvr2base"),c("folded1","new.inter2"))
 eitherOr <- list(c("chql","frrun","new.sen"),c("inparty","incr2"))

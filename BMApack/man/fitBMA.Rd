@@ -3,7 +3,7 @@
 \title{fitBMA Function}
 \usage{
 fitBMA(x, y, g = 3, parallel = TRUE, allNothing = NULL, eitherOr = NULL,
-  always = NULL)
+  always = NULL, conditionals = NULL, conditionedOnTheseVariables = NULL)
 }
 \arguments{
   \item{x:}{A numeric matrix of covariates}

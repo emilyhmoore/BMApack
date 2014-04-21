@@ -1,44 +1,3 @@
-restrictedsMatrix
-head(restrictedsModels)
-head(restrictedsMatrix)
-allNothing
-allNothing[[1]]
-for(i in 1:length(allNothing){#
-		restrictedsMatrix[,allNothing[[i]]]<-restrictedsModels[,allNothingConditionNames[i]]#
-		}
-for(i in 1:length(allNothing)){#
-		restrictedsMatrix[,allNothing[[i]]]<-restrictedsModels[,allNothingConditionNames[i]]#
-		}
-head(restrictedsMatrix)
-head(restrictedsModels)
-head(restrictedsMatrix)
-cbind(restrictedsMatrix,restrictedsModels[,otherrestricteds])
-restrictedsMatrix<-cbind(restrictedsMatrix,restrictedsModels[,otherrestricteds])
-eitherOrTest<-function(x){length(which(x==TRUE))==1 | any(as.logical(x))==FALSE}
-head(restrictedsMatrix)
-unlist(alply(restrictedsMatrix[eitherOr[[i]]], 1, eitherOrTest,i=1:length(eitherOr)))
-for(i in 1:length(eitherOr)){#
-              	unlist(alply(restrictedsMatrix[eitherOr[[i]]], 1, eitherOrTest))#
-              	}
-eitherOrStripIndex <- NULL
-eitherOrTestResults <- NULL#
-              for(i in 1:length(eitherOr)){#
-              	eitherOrStripIndex <- unlist(alply(restrictedsMatrix[eitherOr[[i]]], 1, eitherOrTest))#
-              	eitherOrTestResults <- c(eitherOrTestResults,eitherOrStripIndex)#
-              	}
-eitherOrTestResults
-eitherOrTestResults <- list()#
-              for(i in 1:length(eitherOr)){#
-              	eitherOrStripIndex <- unlist(alply(restrictedsMatrix[eitherOr[[i]]], 1, eitherOrTest))#
-              	eitherOrTestResults <- c(eitherOrTestResults,eitherOrStripIndex)#
-              	}
-eitherOrTestResults
-eitherOrTestResults <- replicate(length(eitherOr),list())
-eitherOrTestResults
-for(i in 1:length(eitherOr)){#
-              	eitherOrStripIndex <- unlist(alply(restrictedsMatrix[eitherOr[[i]]], 1, eitherOrTest))#
-              	eitherOrTestResults <- c(eitherOrTestResults,eitherOrStripIndex)#
-              	}
 eitherOrTestResult
 eitherOrTestResults <- replicate(length(eitherOr),list())#
               for(i in 1:length(eitherOr)){#
@@ -500,7 +459,6 @@ unrestrictedsMatrix
 length(unrestricteds)
 length(unrestrictedsList)
 unrestrictedsList
-unrestrictedsList
 unrestrictedsList<-list()
 unrestrictedsList
 if(length(unrestricteds)!=0){#
@@ -876,3 +834,31 @@ always
 always <- c("X5","X10")
 fitBMA(x,y,g,parallel,allNothing,eitherOr,always)
 summary(fitBMA(x,y,g,parallel,allNothing,eitherOr,always))
+library(devtools)
+library(roxygen2)
+current.code <- as.package("BMAPack")
+load_all(current.code)
+document(current.code)
+demo(BMAPack)
+x <- matrix(rnorm(600),ncol=30)
+x <- matrix(rnorm(600),ncol=20)
+x
+colnames(x) <- paste("X",1:20,sep="")
+y <- rnorm(10)
+y <- rnorm(30)
+g <- 3
+parallel <- TRUE
+library(multicore)#
+library(doMC)#
+library(foreach)#
+registerDoMC(cores=20)
+allNothing <- list(c("X1","X2"),c("X3","X4"))
+always <- c("X5","X6")
+eitherOr <- list(c("X7","X8"),c("X9","X10"))
+conditionals <-list(c("X11","X12"),c("X13","X14"))
+conditionedOnTheseVariables <- list(c("X15","X16"),c("X17","X18"))
+registerDoMC(cores=4)
+fitBMA(x,y,g,parallel,allNothing,eitherOr,always,conditionals,conditionedOnTheseVariables)
+a <- fitBMA(x,y,g,parallel,allNothing,eitherOr,always,conditionals,conditionedOnTheseVariables)
+summary(a)
+plot(a)
