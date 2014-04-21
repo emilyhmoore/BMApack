@@ -6,3 +6,5 @@ eitherOr <- c("X5","X6")
 always <- c("X3","X4")
 fitBMA(x=x, y=y, allNothing=allNothing, eitherOr=eitherOr, always=always)
 
+plot(fitBMA(x=x, y=y, allNothing=allNothing, eitherOr=eitherOr, always=always))
+
