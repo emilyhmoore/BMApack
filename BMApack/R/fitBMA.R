@@ -37,7 +37,7 @@
 #' @export
 
 setGeneric(name="fitBMA",
-           def=function(x, y, g=3, parallel=TRUE,allNothing=NULL, eitherOr=NULL,always=NULL)
+           def=function(x, y, g=3, parallel=TRUE,allNothing=NULL, eitherOr=NULL,always=NULL, conditionals=NULL, conditionedOnTheseVariables=NULL)
            {standardGeneric("fitBMA")}
            ) 
 
