@@ -117,7 +117,7 @@ setMethod(f="plot", signature="bma",
                        
                        max(nonZeroMatrix[[i]][,1])+3*max(nonZeroMatrix[[i]][,2]), length=1000),
                    
-                   heightMatrix[[i]], type="l", xlab="", ylab="", main=paste("Variable",i),
+                   heightMatrix[[i]], type="l", xlab="", ylab="", main=colnames(x@x)[i],
                    
                    ylim=c(0, max(exclusion[i], max(heightMatrix[[i]]))))
               
