@@ -28,7 +28,7 @@ setMethod(f="summary", signature="bma",
 ##of each coefficient and the posterior probability that each coefficient is 
 ##non-zero listed by columns.
             
-return(matrix(c(object@expB,
+return(matrix(c(object@expBcond,
                 object@condSE,
                 object@postProbcoefs,
                 object@largerZero),
