@@ -53,7 +53,7 @@ tail(trial)
 ###########################################
 
 #
-(restrictedsList) ##This is a list of all of the restricted variables
+(restrictedsList)
 
 ###########################################
 
