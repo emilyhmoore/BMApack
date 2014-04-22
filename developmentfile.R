@@ -8,13 +8,25 @@ current.code <- as.package("BMAPack")
 load_all(current.code)
 document(current.code)
 
+g <- 3
+parallel <- TRUE
+library(multicore)
+library(doMC)
+library(foreach)
+registerDoMC(cores=2)
 
- x1<-rnorm(500)
- x2<-rnorm(500,3,15)
- dep<-(x1+2*x2)+rnorm(500,4,100)
- covars<-cbind(x1,x2) 
-jj <- fitBMA(x=covars, y=dep, parallel=FALSE)
-str(jj)
+x <- matrix(rnorm(220), ncol=11)
+colnames(x) <- paste("X", 1:11,sep="")
+y <- rnorm(20)
+allNothing <- list(c("X1","X2"))
+eitherOr <- list(c("X3", "X4"))
+always <- "X5"
+conditionals <- list(c("X6", "X7"))
+conditionedOnTheseVariables <- list(c("X8","X9"))
+
+bmaObject <- fitBMA(x,y,g,parallel,allNothing,eitherOr,always,conditionals,conditionedOnTheseVariables)
+summary(bmaObject)
+plot(bmaObject)
 
 install(pkg=current.code, local=TRUE)
 
