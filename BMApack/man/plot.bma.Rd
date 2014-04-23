@@ -1,6 +1,8 @@
 \docType{methods}
 \name{plot,bma-method}
 \alias{plot,bma-method}
+\alias{plot.bma}
+\alias{plot.bma,ANY-method}
 \title{plot.bma}
 \usage{
 \S4method{plot}{bma}(x, y, ...)

@@ -17,6 +17,7 @@
 #' BMAobject <- fitBMA(x=x, y=y, allNothing=allNothing, eitherOr=eitherOr, always=always)
 #' plot(BMAobject)
 #' @rdname plot.bma
+#' @aliases plot.bma,ANY-method plot.bma
 #' @export
 #' 
 setMethod(f="plot", signature="bma",
