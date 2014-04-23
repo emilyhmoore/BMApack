@@ -18,6 +18,7 @@
 #' trial<-fitBMA(x=covars, y=dep)
 #' summary(trial)
 #' @rdname summary.bma
+#' @aliases summary.bma,ANY-method summary.bma
 #' @export
 #' 
 

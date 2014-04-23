@@ -1,6 +1,8 @@
 \docType{methods}
 \name{summary,bma-method}
 \alias{summary,bma-method}
+\alias{summary.bma}
+\alias{summary.bma,ANY-method}
 \title{summary.bma Function}
 \usage{
 \S4method{summary}{bma}(object)
