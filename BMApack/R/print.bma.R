@@ -9,12 +9,16 @@
 #' @author Jacob Montgomery, Emily Moore, Jae Hee Jung, Dino Hadzic
 #' @examples
 #' 
-#' x1<-rnorm(500)
-#' x2<-rnorm(500,3,15)
-#' dep<-(x1+2*x2)+rnorm(500,4,100)
-#' covars<-cbind(x1,x2) 
-#' trial<-fitBMA(x=covars, y=dep)
-#' print(trial)
+#' x <- matrix(rnorm(220), ncol=11)
+#' colnames(x) <- paste("X", 1:11,sep="")
+#' y <- rnorm(20)
+#' allNothing <- list(c("X1","X2"))
+#' eitherOr <- list(c("X3", "X4"))
+#' always <- "X5"
+#' conditionals <- list(c("X6", "X7"))
+#' conditionedOnTheseVariables <- list(c("X8","X9"))
+#' BMAObject <- fitBMA(x, y, g=3, parallel=FALSE, allNothing, eitherOr, always,conditionals,conditionedOnTheseVariables)
+#' print(BMAObject)
 #' @rdname print.bma
 #' @aliases print.bma,ANY-method print.bma
 #' @export
