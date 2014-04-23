@@ -14,15 +14,24 @@ fitBMA(x, y, g = 3, parallel = TRUE, allNothing = NULL, eitherOr = NULL,
 
   \item{parallel:}{runs in parallel if TRUE}
 
-  \item{allNothing:}{a vector of the names of covariates
-  that should all be included or none should be included}
+  \item{allNothing:}{a list of the names of covariates that
+  should all be included or none should be included}
 
-  \item{eitherOr:}{a vector of the names of covariates
-  among which only one should be included or none should be
+  \item{eitherOr:}{a list of the names of covariates among
+  which only one should be included or none should be
   included}
 
   \item{always:}{a vector of the names of covariates that
   should always be included}
+
+  \item{conditionals:}{a list of the names of covariates
+  conditioned on the covariates included in
+  conditionedOnTheseVariables. These may include squared
+  terms or interaction terms.}
+
+  \item{conditionedOnTheseVariables:}{a list of the names
+  of covariates that serve as constitutive terms for
+  covariates included in conditionals.}
 }
 \value{
 An bma class object with the following slots: \item{x}{A
@@ -47,11 +56,15 @@ Runs regression on all possible combinations of covariates
 given the restrictions specified by the user
 }
 \examples{
-x1<-rnorm(500)
-x2<-rnorm(500,3,15)
-dep<-(x1+2*x2)+rnorm(500,4,100)
-covars<-cbind(x1,x2)
-fitBMA(x=covars, y=dep, parallel=FALSE)
+x <- matrix(rnorm(220), ncol=11)
+colnames(x) <- paste("X", 1:11,sep="")
+y <- rnorm(20)
+allNothing <- list(c("X1","X2"))
+eitherOr <- list(c("X3", "X4"))
+always <- "X5"
+conditionals <- list(c("X6", "X7"))
+conditionedOnTheseVariables <- list(c("X8","X9"))
+fitBMA(x, y, g=3, parallel=FALSE, allNothing, eitherOr, always,conditionals,conditionedOnTheseVariables)
 }
 \author{
 Jacob Montgomery, Dino Hadzic, Jae Hee Jung, and Emily
