@@ -1,21 +1,26 @@
-#' plot.bma 
+#' plot.bma Function
 #' 
-#' Generates posterior coefficient plots which include the posterior probability of the 
-#' coefficient. Included on the plot is a vertical line denoting the probability that the 
-#' variable is not in the model. User will need to scroll through the various plots that
-#' are generated, each corresponding to a particular variable. 
+#' Taking an object of class bma as input, the function generates posterior coefficient plots 
+#' for each variable included in the analysis. The area under the curve over a particular 
+#' interval on the x-axis represents the probability that the coefficient assumes a value along 
+#' that interval. The vertical line positioned at zero represents the probability that the 
+#' variable is not included in a model. The user will need to scroll through the various plots
+#' that are generated, each corresponding to a particular variable.
 #'
 #' @author Jacob Montgomery, Dino Hadzic, Jae Hee Jung, and Emily Moore
 #' @examples
 #' 
-#' x <- matrix(rnorm(80),ncol=8)
-#' colnames(x) <- paste("X",1:8,sep="")
-#' y <- rnorm(10)
-#' allNothing <- c("X1","X2")
-#' eitherOr <- c("X5","X6")
-#' always <- c("X3","X4")
-#' BMAobject <- fitBMA(x=x, y=y, allNothing=allNothing, eitherOr=eitherOr, always=always)
-#' plot(BMAobject)
+#' x <- matrix(rnorm(220), ncol=11)
+#' colnames(x) <- paste("X", 1:11,sep="")
+#' y <- rnorm(20)
+#' allNothing <- list(c("X1","X2"))
+#' eitherOr <- list(c("X3", "X4"))
+#' always <- "X5"
+#' conditionals <- list(c("X6", "X7"))
+#' conditionedOnTheseVariables <- list(c("X8","X9"))
+#' BMAObject <- fitBMA(x, y, g=3, parallel=FALSE, allNothing, eitherOr, always,conditionals,conditionedOnTheseVariables)
+#' plot(BMAObject)
+#' 
 #' @rdname plot.bma
 #' @aliases plot.bma,ANY-method plot.bma
 #' @export
@@ -127,4 +132,5 @@ setMethod(f="plot", signature="bma",
             
             l_ply(1:length(heightMatrix), coef.plot)
           })
+
 
