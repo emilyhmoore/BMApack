@@ -408,9 +408,5 @@ setMethod(f="fitBMA",
           }#close function definition
           ) ##Close method
 
-#x=matrix(rnorm(600), ncol=6)
-#colnames(x)<-paste("var", 1:6)
-#y<-5*x[,1]+2*x[,2]+rnorm(100)
 
-#fitBMA(x=x,y=y, parallel=FALSE)
 
