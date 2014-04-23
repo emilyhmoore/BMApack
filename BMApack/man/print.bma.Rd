@@ -1,6 +1,8 @@
 \docType{methods}
 \name{print,bma-method}
 \alias{print,bma-method}
+\alias{print.bma}
+\alias{print.bma,ANY-method}
 \title{Print.bma Function}
 \usage{
 \S4method{print}{bma}(x, ...)

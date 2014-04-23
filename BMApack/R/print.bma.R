@@ -16,6 +16,7 @@
 #' trial<-fitBMA(x=covars, y=dep)
 #' print(trial)
 #' @rdname print.bma
+#' @aliases print.bma,ANY-method print.bma
 #' @export
 #' 
 
