@@ -53,10 +53,34 @@ setMethod(f="fitBMA",
                               conditionedOnTheseVariables=NULL
                               )
         {
-          
+            
+            ##The restricteds object contains variables that are conditioned.
+  		        restricteds<-c(unlist(allNothing),
+                             always,
+                             unlist(eitherOr), 
+                             unlist(conditionals), 
+                             unlist(conditionedOnTheseVariables))     
+            
+            ##This runs to calculate modelMatrix when there are no restrictions.
+            If(length(restricteds)=0){
+            	
             ##Extract the names of the independent variables, which will be used in later functions.
             varNames <- colnames(x)
-    
+            
+            ##Make the set of all possible combinations of variables
+            ##Returns a list for now.
+            varList <- list()  ## an empty list
+            for(i in colnames(x)){
+              varList <- c(varList,list(i=c(FALSE,TRUE)))
+            }
+            names(varList) <- colnames(x)
+
+            ##varList is now a list with labels the same as 'x' containing FALSE and TRUE for each variables
+            modelMatrix <- as.matrix(expand.grid(varList, KEEP.OUT.ATTRS=FALSE)) ## The complete list of all possible models
+            modelMatrix <- modelMatrix[-1, ] ##Remove the null model here
+
+            }else{
+                
             ##The modelSelect function returns the correct model configurations.  
             modelSelect<-function(varNames=colnames(x), 
                                     parallel=FALSE,
@@ -68,12 +92,6 @@ setMethod(f="fitBMA",
                                     )
               { 
 
-  		        ##The restricteds object contains variables that are conditioned.
-  		        restricteds<-c(unlist(allNothing),
-                             always,
-                             unlist(eitherOr), 
-                             unlist(conditionals), 
-                             unlist(conditionedOnTheseVariables))
               
   		        ##restrictedsIndex returns the index of the conditioned variables. 
               ##This is necessary because we want to separate the conditioned ones 
@@ -135,12 +153,6 @@ setMethod(f="fitBMA",
               ##which is just restricteds that are not always or allNothing types.
               ##They vary as normal in expand grid and are stripped out later.
               restrictedsMatrix<-cbind(restrictedsMatrix,restrictedsModels[,otherrestricteds])
-        
-              ###############################################################################
-              ###############This is where we need to strip out "bad" models#################
-              ###############BEFORE the temp variable is created for use with################
-              ###############the unrestricteds###############################################
-              ###############################################################################
              
               ##This strips out models that fail the eitherOr test. 
               ##Basically, it makes sure there is only one TRUE or all FALSES
@@ -258,6 +270,7 @@ setMethod(f="fitBMA",
               return(modelMatrix)
             }##close modelSelect function
 
+}##Close else condition for length(restricteds)=0 that gives function for modelMatrix when there are restrictions.
 
             ## This function runs the regressions for each combination
             ## i is a list of variable names contained in matrix x
@@ -285,25 +298,9 @@ setMethod(f="fitBMA",
             if(length(unique(colnames(x)))<ncol(x)){
               stop("Must have unique names for each column")
             }
-
-#####JACOB'S CODE THAT CONFIGURES MODEL COMBINATIONS WITHOUT ANY CONDITIONS SPECIFIED ARE COMMENTED OUT STARTING HERE#####           
-            ##Make the set of all possible combinations of variables
-            ##Returns a list for now.
-            #varList <- list()  ## an empty list
-            #for(i in colnames(x)){
-              #varList <- c(varList,list(i=c(FALSE,TRUE)))
-            #}
-            #names(varList) <- colnames(x)
-
-            ##varList is now a list with labels the same as 'x' containing FALSE and TRUE for each variables
-            #modelMatrix <- as.matrix(expand.grid(varList, KEEP.OUT.ATTRS=FALSE)) ## The complete list of all possible models
-            #modelMatrix <- modelMatrix[-1, ] # Remove the null model here
-
-            ##Get the list of lm objects associated with all possible regressions
-            #lmList<-alply(modelMatrix,1, run.regs, .parallel=parallel)
-#####JACOB'S CODE THAT CONFIGURES MODEL COMBINATIONS WITHOUT ANY CONDITIONS SPECIFIED ARE COMMENTED OUT ENDING HERE#####
  
-			      ##Get the modelMatrix from the modelSelect function.
+			      ##Get the modelMatrix from the modelSelect function if there are restrictions.
+			      if(length(restricteds)!=0){
 			      modelMatrix <- modelSelect(varNames=colnames(x),
                                        always=always, 
                                        allNothing=allNothing, 
@@ -312,8 +309,10 @@ setMethod(f="fitBMA",
                                        conditionals=conditionals,
                                        conditionedOnTheseVariables=conditionedOnTheseVariables)
 		  
-			      ##Convert modelMatrix, which is actually a data frame, to a matrix.
+		  ##Convert modelMatrix, which is actually a data frame, to a matrix.
 			      modelMatrix <- as.matrix(modelMatrix)
+			      
+		  }##Close if condition for length(restricteds)!=0 to get modelMatrix.
 
 			      ##Get the list of lm objects associated with all possible regressions
             lmList<-alply(modelMatrix,1,run.regs, .parallel=parallel)
@@ -403,16 +402,16 @@ setMethod(f="fitBMA",
           }#close function definition
           ) ##Close method
 
-#x=matrix(rnorm(1500), ncol=15)
-#colnames(x)<-paste("var", 1:15)
-#y<-5*x[,1]+2*x[,2]+rnorm(100)
+#x=matrix(rnorm(600), ncol=20)
+#colnames(x)<-paste("var", 1:20)
+#y<-5*x[,1]+2*x[,2]+rnorm(30)
 
 #modelSelect(varNames=colnames(x), parallel=FALSE, 
-#       allNothing=list(c("var 1", "var 2"),c("var 6", "var 7")), 
-#       always="var 3", 
-#       eitherOr=list(c("var 4", "var 5"), c("var 8", "var 9")),
-#       conditionals=list(c("var 10"),c("var 12")),
-#       conditionedOnTheseVariables<-list(c("var 11"), c("var 13", "var 14")))
+ #      allNothing=list(c("var 1", "var 2"),c("var 6", "var 7")), 
+  #    always="var 3", 
+   #    eitherOr=list(c("var 4", "var 5"), c("var 8", "var 9")),
+    #  conditionals=list(c("var 10"),c("var 12")),
+     # conditionedOnTheseVariables<-list(c("var 11"), c("var 13", "var 14")))
 
 #trial<-(modelSelect(varNames=colnames(x), parallel=FALSE, allNothing=allNothing, always=always, eitherOr=eitherOr, conditionals=conditionals, conditionedOnTheseVariables=conditionedOnTheseVariables))
 
