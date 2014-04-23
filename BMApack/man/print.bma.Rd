@@ -20,7 +20,7 @@ coefficient values} \item{coefprobs}{A vector of
 probabilities that the coefficient is non-zero}
 }
 \description{
-Prints bma objects as returned by fitBMA
+Prints bma objects as returned by fitBMA.
 }
 \examples{
 x1<-rnorm(500)

@@ -1,11 +1,11 @@
 #' Print.bma Function
 #'
-#' Prints bma objects as returned by fitBMA
+#' Prints bma objects as returned by fitBMA.
 #'
 #'
 #' @return Prints summaries of coefficients and posterior model odds and returns list 
-#'  \item{exp.vals}{A vector of expected coefficient values}
-#'  \item{coefprobs}{A vector of probabilities that the coefficient is non-zero}
+#'  \item{expB}{A vector of expected coefficient values}
+#'  \item{postProbcoefs}{A vector of probabilities that the coefficient is non-zero}
 #' @author Jacob Montgomery, Emily Moore, Jae Hee Jung, Dino Hadzic
 #' @examples
 #' 
@@ -23,8 +23,8 @@
 setMethod(f="print", signature="bma",
           definition=function(x, ...){
             cat("Posterior Expected Value of Coefficients:", "\n")
-            print.default(x@exp.vals)
+            print.default(x@expB)
             cat("\n")
             cat("Summary Stats for Posterior Probability Coefficient is Non-zero:", "\n")
-            print.default(x@coefprobs)
+            print.default(x@postProbcoefs)
           })
