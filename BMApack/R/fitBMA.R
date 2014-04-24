@@ -59,35 +59,12 @@ setMethod(f="fitBMA",
                               conditionedOnTheseVariables=NULL
                               )
         {
-            
-            ##The restricteds object contains variables that are conditioned.
-  		        restricteds<-c(unlist(allNothing),
-                             always,
-                             unlist(eitherOr), 
-                             unlist(conditionals), 
-                             unlist(conditionedOnTheseVariables))     
-            
-            ##This runs to calculate modelMatrix when there are no restrictions.
-            if(length(restricteds)==0){
-            	
-            ##Extract the names of the independent variables, which will be used in later functions.
-            varNames <- colnames(x)
-            
-            ##Make the set of all possible combinations of variables
-            ##Returns a list for now.
-            varList <- list()  ## an empty list
-            for(i in colnames(x)){
-              varList <- c(varList,list(i=c(FALSE,TRUE)))
-            }
-            names(varList) <- colnames(x)
 
-            ##varList is now a list with labels the same as 'x' containing FALSE and TRUE for each variables
-            modelMatrix <- as.matrix(expand.grid(varList, KEEP.OUT.ATTRS=FALSE)) ## The complete list of all possible models
-            modelMatrix <- modelMatrix[-1, ] ##Remove the null model here
 
-            }else{
-                
-            ##The modelSelect function returns the correct model configurations.  
+########Functions that are used in fitBMA()########
+###################################################
+            
+             ##The modelSelect function returns the correct model configurations.  
             modelSelect<-function(varNames=colnames(x), 
                                     parallel=FALSE,
                                     allNothing, 
@@ -264,7 +241,8 @@ setMethod(f="fitBMA",
                 ##conditioning process.
                 modelMatrix<-modelMatrix[colnames(x)]
               
-  		        }else{
+  		        }else{ #This else is for when length(unrestricteds)==0.
+  		        	
   		        	modelMatrix <- restrictedsMatrix
   		        	
   		        	##This ensures that the variables go back into the order they originally were in for the input
@@ -275,9 +253,8 @@ setMethod(f="fitBMA",
 
               return(modelMatrix)
             }##close modelSelect function
-
-}##Close else condition for length(restricteds)=0 that gives function for modelMatrix when there are restrictions.
-
+            
+            
             ## This function runs the regressions for each combination
             ## i is a list of variable names contained in matrix x
             ## It takes each variable and standardizes them
@@ -291,7 +268,8 @@ setMethod(f="fitBMA",
               return(list(coef=thisCoef, se=thisSE, R2=thisR2))
             }
 
-            ##the bayesFactor function calculates the bayes factor 
+
+            ##The bayesFactor function calculates the bayes factor 
             ##It takes an index
             ##Will add better comment later.
             bayesFactor<-function(index){
@@ -299,11 +277,42 @@ setMethod(f="fitBMA",
               names(bf)<-c("bf")
               return(bf)
             }
-                        
+
+
+##########Functions in fitBMA() ends here##########            
+###################################################
+            
+            
             ##Error thrown if non-unique column names.Each variable must have its own unique name.
             if(length(unique(colnames(x)))<ncol(x)){
               stop("Must have unique names for each column")
             }
+            
+            ##The restricteds object contains variables that are conditioned.
+  		        restricteds<-c(unlist(allNothing),
+                             always,
+                             unlist(eitherOr), 
+                             unlist(conditionals), 
+                             unlist(conditionedOnTheseVariables))     
+            
+            ##This runs to calculate modelMatrix when there are no restrictions.
+            if(length(restricteds)==0){
+            	
+            ##Extract the names of the independent variables, which will be used in later functions.
+            varNames <- colnames(x)
+            
+            ##Make the set of all possible combinations of variables
+            ##Returns a list for now.
+            varList <- list()  ## an empty list
+            for(i in colnames(x)){
+              varList <- c(varList,list(i=c(FALSE,TRUE)))
+            }
+            names(varList) <- colnames(x)
+
+            ##varList is now a list with labels the same as 'x' containing FALSE and TRUE for each variables
+            modelMatrix <- as.matrix(expand.grid(varList, KEEP.OUT.ATTRS=FALSE)) ## The complete list of all possible models
+            modelMatrix <- modelMatrix[-1, ] ##Remove the null model here
+            } ##End calculation of modelMatrix for when there are no restrictions at all.
  
 			      ##Get the modelMatrix from the modelSelect function if there are restrictions.
 			      if(length(restricteds)!=0){
