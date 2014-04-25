@@ -108,18 +108,21 @@ setMethod(f="fitBMA",
                                           function(i){otherrestrictedsList[[i]]<-c(TRUE, FALSE)},
                                           .parallel=parallel)
                                           }
-                                      
+              
+              ##Name otherrestrictedsList                        
               names(otherrestrictedsList)<-otherrestricteds
-          
+              
+              ##Combine restrictedsList and otherrestrictedsList into one.
               restrictedsList<-c(restrictedsList, otherrestrictedsList)
 
               ##Expand grid on the restricted variables.
               restrictedsModels <- expand.grid(restrictedsList)
-
-			
+ 
+			  ##Create a temporary matrix to be filled later.
               restrictedsMatrix <-matrix(rep(FALSE),ncol=length(c(unlist(allNothing), always)), 
                                       nrow=nrow(restrictedsModels))
 		      
+		      ##Appropriately name the restrictedsMatrix.
               colnames(restrictedsMatrix)<-c(unlist(allNothing), always)
 		    
 		          ##Put in the configurations for the alwaysCondition variables into restrictedsMatrix.
@@ -162,9 +165,8 @@ setMethod(f="fitBMA",
               for (i in 1:length(conditionals)){
                 conditionalsStripIndex<-unlist(
                   alply(
-                    ##This nasty piece is to bind together the conditionals with the variables
-                    ##on which they're dependent. There should be a way to do this as a list
-                    ##of lists instead, which would be more parsimonious. 
+                    ##Bind together the conditionals with the variables
+                    ##on which they're dependent.
                     restrictedsMatrix[,cbind(conditionals[[i]], conditionedOnTheseVariables[[i]])],
                                                      1,conditionalsTest)##apply over rows the fun. conditionalsTest
                   )
@@ -176,6 +178,7 @@ setMethod(f="fitBMA",
               ##The transformation into a matrix is for convenience in the next part. 
               eitherOrTestResults <- matrix(eitherOrTestResults,ncol=length(eitherOr),byrow=FALSE)
               
+              ##Turn conditionalsTestResults into a matrix.
               conditionalsTestResults<-matrix(conditionalsTestResults, ncol=length(conditionals), byrow=FALSE)
               
               ##Given the matrix of eitherOrTestResults, create a vector whose element is 
@@ -224,15 +227,15 @@ setMethod(f="fitBMA",
                 ##Expand grid on the unconditioned variables.
                 unrestrictedsMatrix <- expand.grid(unrestrictedsList)
                 
-                ##Here, I'm llplying over all of the rows of the conditioned variable combination matrix
+                ##Llply over all of the rows of the conditioned variable combination matrix
                 ##This is because temp in the unrestricted matrix takes on a new value for each model 
                 ##in the conditioned matrix.So this matches temp==1 in unconditioned to row 1 
                 ##of the conditioned matrix 
-                ##lply returns a list and laply doesn't work in this context, so I use do.call with rbind
+                ##lply returns a list and laply doesn't work in this context, so use do.call with rbind
                 ##to get a matrix here.
                 modelMatrix<-do.call("rbind",llply(1:nrow(restrictedsMatrix), bindTogether))
               
-                ##Finally, we remove temp. This makes it so modelMatrix is exactly the same but without
+                ##Finally, remove temp. This makes it so modelMatrix is exactly the same but without
                 ##the temp variable.
                 modelMatrix$temp<-NULL
               
