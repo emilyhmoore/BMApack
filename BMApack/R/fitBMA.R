@@ -5,14 +5,14 @@
 #' @param x: A numeric matrix of covariates
 #' @param y: A numeric vector of the dependent variable
 #' @param g: A value for the hyper-prior g
-#' @param parallel: runs in parallel if TRUE
-#' @param allNothing: a list of the names of covariates that should all be included or none should be included
-#' @param eitherOr: a list of the names of covariates among which only one should be included or none should be included
-#' @param always: a vector of the names of covariates that should always be included
-#' @param conditionals: a list of the names of covariates conditioned on the covariates included in conditionedOnTheseVariables. These may include squared terms or interaction terms.
-#' @param conditionedOnTheseVariables: a list of the names of covariates that serve as constitutive terms for covariates included in conditionals.
+#' @param parallel: Runs in parallel if TRUE
+#' @param allNothing: A list of the names of covariates that should all be included or none should be included
+#' @param eitherOr: A list of the names of covariates among which only one should be included or none should be included
+#' @param always: A vector of the names of covariates that should always be included
+#' @param conditionals: A list of the names of covariates conditioned on the covariates included in conditionedOnTheseVariables. These may include squared terms or interaction terms.
+#' @param conditionedOnTheseVariables: A list of the names of covariates that serve as constitutive terms for covariates included in conditionals.
 #'
-#' @return An bma class object with the following slots: 
+#' @return A bma class object with the following slots: 
 #'  \item{x}{A matrix of covariates}
 #'  \item{y}{A vector of the dependent variable} 
 #'  \item{coefs}{Coefficients in all models}
@@ -145,15 +145,15 @@ setMethod(f="fitBMA",
               ##The as.logical line in there because, for some reason,
               ##it doesn't think the restrictedsMatrix is a logical.
               
-              ##good models are TRUE
+              ##Good models are TRUE
   		        eitherOrTest<-function(x){length(which(x==TRUE))==1 | any(as.logical(x))==FALSE}
               
-              ##asks if the first value is FALSE. If it is, the model gets a TRUE
-              ##if the first value is TRUE, then the model only gets a TRUE if everything is TRUE.
+              ##Asks if the first value is FALSE. If it is, the model gets a TRUE
+              ##If the first value is TRUE, then the model only gets a TRUE if everything is TRUE.
               conditionalsTest<-function(x){x[1]==FALSE | all(as.logical(x))==TRUE}
               
-              ##Cannot apply over the whole row or it will apply to always and allNothing too
-              ##so this indexes the matrix according only to those models in eitherOr
+              ##Cannot apply over the whole row or it will apply to always and allNothing too.
+              ##So this indexes the matrix according only to those models in eitherOr.
               ##The unlist part is to get it as a vector that can be used for indexing the whole matrix.
               eitherOrTestResults <- NULL
               for(i in 1:length(eitherOr)){
@@ -200,10 +200,10 @@ setMethod(f="fitBMA",
           
           
               ##This function matches the models with a particular temp value to a row 
-              ##in the restrictedsMatrix 
+              ##in the restrictedsMatrix. 
               ##Thus, for each model where temp==1 in unrestricteds, we match it to the first row
               ##of the restricteds. Same with 2 and so on all the way through the number of rows
-              ##in the unrestricteds matrix (number of those type of models.
+              ##in the unrestricteds matrix.
               bindTogether<-function(i){cbind(unrestrictedsMatrix[unrestrictedsMatrix$temp==i,], 
                                               restrictedsMatrix[i,])}
               
@@ -227,10 +227,10 @@ setMethod(f="fitBMA",
                 ##Expand grid on the unconditioned variables.
                 unrestrictedsMatrix <- expand.grid(unrestrictedsList)
                 
-                ##Llply over all of the rows of the conditioned variable combination matrix
+                ##Llply over all of the rows of the conditioned variable combination matrix.
                 ##This is because temp in the unrestricted matrix takes on a new value for each model 
-                ##in the conditioned matrix.So this matches temp==1 in unconditioned to row 1 
-                ##of the conditioned matrix 
+                ##in the conditioned matrix. So this matches temp==1 in unconditioned to row 1 
+                ##of the conditioned matrix. 
                 ##lply returns a list and laply doesn't work in this context, so use do.call with rbind
                 ##to get a matrix here.
                 modelMatrix<-do.call("rbind",llply(1:nrow(restrictedsMatrix), bindTogether))
@@ -258,8 +258,8 @@ setMethod(f="fitBMA",
             }##close modelSelect function
             
             
-            ## This function runs the regressions for each combination
-            ## i is a list of variable names contained in matrix x
+            ## This function runs the regressions for each combination.
+            ## i is a list of variable names contained in matrix x.
             ## It takes each variable and standardizes them
             ## Runs a regression without a constant
             ## Outputs the relevant object of class lm
@@ -272,9 +272,7 @@ setMethod(f="fitBMA",
             }
 
 
-            ##The bayesFactor function calculates the bayes factor 
-            ##It takes an index
-            ##Will add better comment later.
+            ##The bayesFactor function calculates the bayes factor.
             bayesFactor<-function(index){
               bf <- (1+g)^((n-numberVars[index]-1)/2)*((1+g*(1-r2s[index]))^(-(n-1)/2))
               names(bf)<-c("bf")
@@ -304,8 +302,8 @@ setMethod(f="fitBMA",
             ##Extract the names of the independent variables, which will be used in later functions.
             varNames <- colnames(x)
             
-            ##Make the set of all possible combinations of variables
-            ##Returns a list for now.
+            ##Make the set of all possible combinations of variables.
+            ##Returns a list.
             varList <- list()  ## an empty list
             for(i in colnames(x)){
               varList <- c(varList,list(i=c(FALSE,TRUE)))
@@ -332,17 +330,17 @@ setMethod(f="fitBMA",
 			      
 		  }##Close if condition for length(restricteds)!=0 to get modelMatrix.
 
-			      ##Get the list of lm objects associated with all possible regressions
+			      ##Get the list of lm objects associated with all possible regressions.
             lmList<-alply(modelMatrix,1,run.regs, .parallel=parallel)
 
-            ##This gets the r.squared values and puts them in a list
+            ##This gets the r.squared values and puts them in a list.
             r2s<-laply(lmList, function(x){return(x[["R2"]])}, .parallel=parallel)
 
-            ##Extracts the coefficients and ses
+            ##Extracts the coefficients and the standard errors.
             coefs<-llply(lmList, function(x){return(x[["coef"]])}, .parallel=parallel)
             standardErrors<-llply(lmList, function(x){return(x[["se"]])}, .parallel=parallel)
 
-            ## Calculate the number of variabels in each model
+            ## Calculate the number of variables in each model.
             numberVars <- rowSums(modelMatrix)
 
             ## Some useful constants
@@ -350,10 +348,10 @@ setMethod(f="fitBMA",
             m <- nrow(modelMatrix) # number of total models
             p <- ncol(modelMatrix)+1
             
-            ##vector of bmk values for each model
+            ##Vector of bmk values for each model
             bfVec<-aaply(1:m,.margins=1,.fun=bayesFactor, .parallel=parallel)
 
-            ## Posterior probability of each model
+            ##Posterior probability of each model
             postProb <- matrix(bfVec/sum(bfVec), ncol=1)
 
             ##Pr(B!=0)
@@ -373,17 +371,17 @@ setMethod(f="fitBMA",
               sdMatrix[i,names(standardErrors[[i]])] <- standardErrors[[i]]
             }
             
-            ## E(B)
+            ##E(B)
             expB <- t(coefMatrix)%*%postProb
 
-            ## E(B|B!=0)
+            ##E(B|B!=0)
             expBcond <- rep(NA, p-1)
             for(i in 1:(p-1)){
               these <- (modelMatrix[,i]==TRUE)
               expBcond[i] <- (coefMatrix[these,i])%*% (postProb[these,])
             }
 
-            ## se(B|B!=0)
+            ##se(B|B!=0)
             condSE <- rep(NA, p-1)
             for(i in 1:(p-1)){
               these <- (modelMatrix[,i]==TRUE)
@@ -391,15 +389,14 @@ setMethod(f="fitBMA",
             }
             condSE <- sqrt(condSE)
 
-            ## Pr(B>0|B!=0)
+            ##Pr(B>0|B!=0)
             largerZero <- rep(NA, p-1)
             for(i in 1:(p-1)){
               these <- (modelMatrix[,i]==TRUE)
               largerZero[i] <- pnorm(0, coefMatrix[these,i], sdMatrix[these,i], lower.tail=FALSE) %*%(postProb[these,])
              }
              
-            ##Returned everything.
-            ##The documentation will need to be changed for the help files.
+            ##Return everything.
             return(new("bma", 
                        x=x, 
                        y=y, 
@@ -415,10 +412,10 @@ setMethod(f="fitBMA",
                        condSE=condSE,
                        coefMatrix=coefMatrix,
                        sdMatrix=sdMatrix)
-            )##close return on function
+            )##Close return on function
 
-          }#close function definition
-          ) ##Close method
+          }##Close function definition
+          )##Close method
 
 
 
