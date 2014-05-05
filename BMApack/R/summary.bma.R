@@ -30,8 +30,8 @@ setMethod(f="summary", signature="bma",
           definition=function(object){
 
 ##The summary function returns a matrix (table) with the posterior expected value 
-##of each coefficient and the posterior probability that each coefficient is 
-##non-zero listed by columns.
+##of each coefficient, the conditional standard error of each coefficient, the posterior probability that each coefficient is 
+##non-zero, and the posterior probability that the coefficient is larger than zero.
             
 return(matrix(c(object@expBcond,
                 object@condSE,
