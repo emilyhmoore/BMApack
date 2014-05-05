@@ -1,24 +1,3 @@
-conditionalsTestResults<-NULL#
-              for (i in 1:length(conditionals)){#
-                conditionalsStripIndex<-unlist(#
-                  alply(#
-                    ##This nasty piece is to bind together the conditionals with the variables#
-                    ##on which they're dependent. There should be a way to do this as a list#
-                    ##of lists instead, which would be more parsimonious. #
-                    restrictedsMatrix[,cbind(conditionals[[i]], conditionedOnTheseVariables[[i]])],#
-                                                     1,conditionalsTest)##apply over rows the fun. conditionalsTest#
-                  )#
-                conditionalsTestResults<-c(conditionalsTestResults, conditionalsStripIndex)#
-              }
-conditionalsTestResults
-eitherOrTestResults <- matrix(eitherOrTestResults,ncol=length(eitherOr),byrow=FALSE)
-conditionalsTestResults<-matrix(conditionalsTestResults, ncol=length(conditionals), byrow=FALSE)
-conditionalsTestResults
-TestResultsCombined <- aaply(cbind(eitherOrTestResults,conditionalsTestResults),1,#
-              function(x){#
-              	ifelse(all(x),TRUE,FALSE)#
-              })
-restrictedsMatrix<-restrictedsMatrix[TestResultsCombined,]
 bindTogether<-function(i){cbind(unrestrictedsMatrix[unrestrictedsMatrix$temp==i,],
 restrictedsMatrix[i,])}
 unrestrictedsList<-list()
@@ -675,3 +654,10 @@ conditionals <- list(c("X6", "X7"))#
 conditionedOnTheseVariables <- list(c("X8","X9"))
 bmaObject <- fitBMA(x,y,g,parallel,allNothing,eitherOr,always,conditionals,conditionedOnTheseVariables)
 summary(bmaObject)
+library(devtools)
+library(roxygen2)
+setwd("/Users/jaeheejung/Desktop/Spring 2014/Applied Statistical Programming/BMApack")
+current.code <- as.package("BMAPack")
+load_all(current.code)
+document(current.code)
+install(pkg=current.code, local=TRUE)

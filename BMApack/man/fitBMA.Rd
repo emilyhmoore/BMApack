@@ -3,7 +3,7 @@
 \title{fitBMA Function}
 \usage{
 fitBMA(x, y, g = 3, parallel = TRUE, allNothing = NULL, eitherOr = NULL,
-  always = NULL, conditionals = NULL, conditionedOnTheseVariables = NULL)
+  always = NULL, squaredInteraction = NULL, constituentTerms = NULL)
 }
 \arguments{
   \item{x:}{A numeric matrix of covariates}
@@ -12,29 +12,29 @@ fitBMA(x, y, g = 3, parallel = TRUE, allNothing = NULL, eitherOr = NULL,
 
   \item{g:}{A value for the hyper-prior g}
 
-  \item{parallel:}{runs in parallel if TRUE}
+  \item{parallel:}{Runs in parallel if TRUE}
 
-  \item{allNothing:}{a list of the names of covariates that
+  \item{allNothing:}{A list of the names of covariates that
   should all be included or none should be included}
 
-  \item{eitherOr:}{a list of the names of covariates among
+  \item{eitherOr:}{A list of the names of covariates among
   which only one should be included or none should be
   included}
 
-  \item{always:}{a vector of the names of covariates that
+  \item{always:}{A vector of the names of covariates that
   should always be included}
 
-  \item{conditionals:}{a list of the names of covariates
-  conditioned on the covariates included in
-  conditionedOnTheseVariables. These may include squared
-  terms or interaction terms.}
+  \item{squaredInteraction:}{A list of the names of
+  covariates conditioned on the covariates included in
+  constituentTerms. These may include squared terms and/or
+  interaction terms.}
 
-  \item{conditionedOnTheseVariables:}{a list of the names
-  of covariates that serve as constitutive terms for
-  covariates included in conditionals.}
+  \item{constituentTerms:}{A list of the names of
+  covariates that serve as constitutive terms for
+  covariates included in squaredInteraction.}
 }
 \value{
-An bma class object with the following slots: \item{x}{A
+A bma class object with the following slots: \item{x}{A
 matrix of covariates} \item{y}{A vector of the dependent
 variable} \item{coefs}{Coefficients in all models}
 \item{standardErrors}{Standard errors of coefficients in
@@ -62,9 +62,9 @@ y <- rnorm(20)
 allNothing <- list(c("X1","X2"))
 eitherOr <- list(c("X3", "X4"))
 always <- "X5"
-conditionals <- list(c("X6", "X7"))
-conditionedOnTheseVariables <- list(c("X8","X9"))
-fitBMA(x, y, g=3, parallel=FALSE, allNothing, eitherOr, always,conditionals,conditionedOnTheseVariables)
+squaredInteraction <- list(c("X6", "X7"))
+constituentTerms <- list(c("X8","X9"))
+fitBMA(x, y, g=3, parallel=FALSE, allNothing, eitherOr, always,squaredInteraction,constituentTerms)
 }
 \author{
 Jacob Montgomery, Dino Hadzic, Jae Hee Jung, and Emily

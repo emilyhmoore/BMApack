@@ -9,8 +9,8 @@
 #' @param allNothing: A list of the names of covariates that should all be included or none should be included
 #' @param eitherOr: A list of the names of covariates among which only one should be included or none should be included
 #' @param always: A vector of the names of covariates that should always be included
-#' @param conditionals: A list of the names of covariates conditioned on the covariates included in conditionedOnTheseVariables. These may include squared terms or interaction terms.
-#' @param conditionedOnTheseVariables: A list of the names of covariates that serve as constitutive terms for covariates included in conditionals.
+#' @param squaredInteraction: A list of the names of covariates conditioned on the covariates included in constituentTerms. These may include squared terms and/or interaction terms.
+#' @param constituentTerms: A list of the names of covariates that serve as constitutive terms for covariates included in squaredInteraction.
 #'
 #' @return A bma class object with the following slots: 
 #'  \item{x}{A matrix of covariates}
@@ -36,15 +36,15 @@
 #' allNothing <- list(c("X1","X2"))
 #' eitherOr <- list(c("X3", "X4"))
 #' always <- "X5"
-#' conditionals <- list(c("X6", "X7"))
-#' conditionedOnTheseVariables <- list(c("X8","X9"))
-#' fitBMA(x, y, g=3, parallel=FALSE, allNothing, eitherOr, always,conditionals,conditionedOnTheseVariables)
+#' squaredInteraction <- list(c("X6", "X7"))
+#' constituentTerms <- list(c("X8","X9"))
+#' fitBMA(x, y, g=3, parallel=FALSE, allNothing, eitherOr, always,squaredInteraction,constituentTerms)
 #' @rdname fitBMA
 #' @export
 
 setGeneric(name="fitBMA",
            def=function(x, y, g=3, parallel=TRUE,allNothing=NULL, eitherOr=NULL, always=NULL, 
-                        conditionals=NULL, conditionedOnTheseVariables=NULL)
+                        squaredInteraction=NULL, constituentTerms=NULL)
            {standardGeneric("fitBMA")}
            ) 
 
@@ -55,8 +55,8 @@ setMethod(f="fitBMA",
                               allNothing=NULL, 
                               eitherOr=NULL,
                               always=NULL,
-                              conditionals=NULL,
-                              conditionedOnTheseVariables=NULL
+                              squaredInteraction=NULL,
+                              constituentTerms=NULL
                               )
         {
 
@@ -70,8 +70,8 @@ setMethod(f="fitBMA",
           allNothing, 
           eitherOr,
           always,
-          conditionals,
-          conditionedOnTheseVariables
+          squaredInteraction,
+          constituentTerms
                                     )
               { 
 
@@ -150,7 +150,7 @@ setMethod(f="fitBMA",
               
             ##Asks if the first value is FALSE. If it is, the model gets a TRUE
             ##If the first value is TRUE, then the model only gets a TRUE if everything is TRUE.
-            conditionalsTest<-function(x){x[1]==FALSE | all(as.logical(x))==TRUE}
+            squaredInteractionTest<-function(x){x[1]==FALSE | all(as.logical(x))==TRUE}
               
             ##Cannot apply over the whole row or it will apply to always and allNothing too.
             ##So this indexes the matrix according only to those models in eitherOr.
@@ -161,16 +161,16 @@ setMethod(f="fitBMA",
               	eitherOrTestResults <- c(eitherOrTestResults,eitherOrStripIndex)
               }
               
-            conditionalsTestResults<-NULL
-            for (i in 1:length(conditionals)){
-                conditionalsStripIndex<-unlist(
+            squaredInteractionTestResults<-NULL
+            for (i in 1:length(squaredInteraction)){
+                squaredInteractionStripIndex<-unlist(
                   alply(
-                    ##Bind together the conditionals with the variables
+                    ##Bind together the squaredInteraction with the variables
                     ##on which they're dependent.
-                    restrictedsMatrix[,cbind(conditionals[[i]], conditionedOnTheseVariables[[i]])],
-                                                     1,conditionalsTest)##apply over rows the fun. conditionalsTest
+                    restrictedsMatrix[,cbind(squaredInteraction[[i]], constituentTerms[[i]])],
+                                                     1,squaredInteractionTest)##apply over rows the fun. squaredInteractionTest
                   )
-                conditionalsTestResults<-c(conditionalsTestResults, conditionalsStripIndex)
+                squaredInteractionTestResults<-c(squaredInteractionTestResults, squaredInteractionStripIndex)
               }
   		        
             ##Since eitherOrTestResults is a vector, transform it into a matrix with rows 
@@ -178,14 +178,14 @@ setMethod(f="fitBMA",
             ##The transformation into a matrix is for convenience in the next part. 
             eitherOrTestResults <- matrix(eitherOrTestResults,ncol=length(eitherOr),byrow=FALSE)
               
-            ##Turn conditionalsTestResults into a matrix.
-            conditionalsTestResults<-matrix(conditionalsTestResults, ncol=length(conditionals), byrow=FALSE)
+            ##Turn squaredInteractionTestResults into a matrix.
+            squaredInteractionTestResults<-matrix(squaredInteractionTestResults, ncol=length(squaredInteraction), byrow=FALSE)
               
             ##Given the matrix of eitherOrTestResults, create a vector whose element is 
             ##TRUE if all eitherOr conditions are TRUE. Otherwise, it is FALSE. This is 
             ##done because if the user specifies more than one eitherOr condition, models 
             ##for which the conditions hold for all eitherOr conditions should be calculated.
-            TestResultsCombined <- aaply(cbind(eitherOrTestResults,conditionalsTestResults),1,
+            TestResultsCombined <- aaply(cbind(eitherOrTestResults,squaredInteractionTestResults),1,
               function(x){
               	ifelse(all(x),TRUE,FALSE)
               })
@@ -292,8 +292,8 @@ setMethod(f="fitBMA",
   		    restricteds <- c(unlist(allNothing),
                              always,
                              unlist(eitherOr), 
-                             unlist(conditionals), 
-                             unlist(conditionedOnTheseVariables))     
+                             unlist(squaredInteraction), 
+                             unlist(constituentTerms))     
             
             ##This runs to calculate modelMatrix when there are no restrictions.
             if(length(restricteds)==0){
@@ -321,8 +321,8 @@ setMethod(f="fitBMA",
                                        allNothing=allNothing, 
                                        eitherOr=eitherOr,
                                        parallel=parallel,
-                                       conditionals=conditionals,
-                                       conditionedOnTheseVariables=conditionedOnTheseVariables)
+                                       squaredInteraction=squaredInteraction,
+                                       constituentTerms=constituentTerms)
 		  
 		    ##Convert modelMatrix, which is actually a data frame, to a matrix.
 			modelMatrix <- as.matrix(modelMatrix)

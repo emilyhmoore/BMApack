@@ -15,9 +15,9 @@
 #' allNothing <- list(c("X1","X2"))
 #' eitherOr <- list(c("X3", "X4"))
 #' always <- "X5"
-#' conditionals <- list(c("X6", "X7"))
-#' conditionedOnTheseVariables <- list(c("X8","X9"))
-#' BMAObject <- fitBMA(x, y, g=3, parallel=FALSE, allNothing, eitherOr, always,conditionals,conditionedOnTheseVariables)
+#' squaredInteraction <- list(c("X6", "X7"))
+#' constituentTerms <- list(c("X8","X9"))
+#' BMAObject <- fitBMA(x, y, g=3, parallel=FALSE, allNothing, eitherOr, always,squaredInteraction,constituentTerms)
 #' print(BMAObject)
 #' @rdname print.bma
 #' @aliases print.bma,ANY-method print.bma
